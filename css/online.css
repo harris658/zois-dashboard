@@ -1,0 +1,80 @@
+/* ── Online Stock setup wrapper ───────────────────────────────── */
+/* (#os-setup styled via setup.css) */
+
+/* ── Status chips on cards ───────────────────────────────────── */
+.os-chip {
+  min-width: 42px;
+  height: 46px;
+  padding: 0 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 1px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 500;
+  border: 1px solid var(--border);
+}
+
+.os-chip.exact {
+  background: var(--ok-bg);
+  color: var(--ok);
+  border-color: var(--ok-border);
+}
+
+.os-chip.excess {
+  background: var(--warn-bg);
+  color: var(--warn);
+  border-color: var(--warn-border);
+}
+
+.os-chip.short {
+  background: var(--err-bg);
+  color: var(--err);
+  border-color: var(--err-border);
+}
+
+.os-chip.nostock {
+  background: var(--bg);
+  color: var(--border);
+  text-decoration: line-through;
+}
+
+.os-chip-sz  { font-size: 12.5px; font-weight: 600; line-height: 1; }
+.os-chip-qty { font-size: 10px; opacity: .8; line-height: 1; }
+
+/* ── Modal size comparison table ─────────────────────────────── */
+.os-diff-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+.os-diff-table th {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--light);
+  text-align: left;
+  padding: 5px 8px 5px 0;
+  border-bottom: 1px solid var(--border);
+  font-weight: 700;
+}
+
+.os-diff-table td {
+  padding: 7px 8px 7px 0;
+  border-bottom: 1px solid var(--bg2);
+  color: var(--dark);
+}
+
+.os-diff-table .diff-pos { color: var(--warn); font-weight: 600; }
+.os-diff-table .diff-neg { color: var(--err); font-weight: 600; }
+.os-diff-table .diff-ok  { color: var(--ok); font-weight: 600; }
+
+.os-summary {
+  font-size: 11.5px;
+  color: var(--light);
+  margin-top: 6px;
+}

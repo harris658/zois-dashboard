@@ -1,0 +1,226 @@
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE OVERRIDES
+   640px → tablet / large phone
+   480px → standard phone
+   360px → small phone
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Header ──────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .global-hdr {
+    padding: 0 12px;
+    gap: 8px;
+    height: 48px;
+  }
+
+  .wordmark { font-size: 16px; }
+
+  .hdr-actions { gap: 6px; }
+
+  /* Hide "Sync" label text — keep icon only */
+  .sync-label { display: none; }
+  .sync-btn   { padding: 6px 9px; gap: 0; }
+
+  /* Stats sub-bar */
+  .store-hdr {
+    padding: 0 12px;
+    height: auto;
+    min-height: 34px;
+    gap: 8px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .pill-btn {
+    padding: 5px 11px;
+    font-size: 11.5px;
+  }
+}
+
+/* ── Filter bar — horizontal scroll on mobile ────────────────── */
+@media (max-width: 640px) {
+  .filters {
+    padding: 7px 12px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 6px;
+    scrollbar-width: none;
+  }
+  .filters::-webkit-scrollbar { display: none; }
+
+  .search-wrap {
+    min-width: 120px;
+    max-width: 150px;
+    flex-shrink: 0;
+  }
+
+  .search-wrap input { padding: 7px 9px 7px 28px; font-size: 12.5px; }
+
+  .fsel {
+    font-size: 12px;
+    padding: 6px 22px 6px 8px;
+  }
+
+  .fdiv { flex-shrink: 0; }
+
+  .f-count { display: none; }
+}
+
+/* ── Grid area ───────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .grid-area { padding: 12px; }
+
+  .pgrid {
+    grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+    gap: 10px;
+  }
+}
+
+@media (max-width: 360px) {
+  .pgrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .card-body { padding: 10px 10px 11px; }
+}
+
+/* ── Setup screens ───────────────────────────────────────────── */
+@media (max-width: 640px) {
+  #store-setup, #os-setup {
+    padding: 20px 12px;
+    justify-content: flex-start;
+    align-items: stretch;
+  }
+
+  .setup-card {
+    padding: 24px 20px;
+    border-radius: 12px;
+    max-width: 100%;
+  }
+
+  .setup-card h2 { font-size: 20px; }
+  .setup-card > p { margin-bottom: 20px; }
+
+  /* Stack label above select */
+  .map-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .map-label { min-width: unset; }
+  .map-sel   { width: 100%; }
+
+  /* Format toggle: stack */
+  .fmt-toggle { flex-direction: column; gap: 6px; }
+
+  /* Size checks */
+  .sz-checks { max-height: 88px; }
+}
+
+/* ── Modal — bottom sheet on mobile ─────────────────────────── */
+@media (max-width: 600px) {
+  .overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .mbox {
+    border-radius: 20px 20px 0 0;
+    max-height: 90vh;
+    max-width: 100%;
+    grid-template-columns: 1fr;
+    grid-template-rows: 200px 1fr;
+    width: 100%;
+  }
+
+  .mbody {
+    padding: 18px 18px 36px;
+    gap: 14px;
+  }
+
+  .mcode { font-size: 16px; }
+  .mname { font-size: 12px; }
+}
+
+/* ── Settings drawer — bottom sheet on mobile ────────────────── */
+@media (max-width: 640px) {
+  .sdrawer {
+    width: 100%;
+    max-width: 100%;
+    right: 0;
+    top: auto;
+    bottom: 0;
+    height: 88vh;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -4px 32px rgba(26, 13, 4, .14);
+    transform: translateY(100%);
+    transition: transform .24s cubic-bezier(.4, 0, .2, 1);
+  }
+  .sdrawer.open { transform: translateY(0); }
+}
+
+/* ── Profile tab ─────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  #tab-profile { padding: 20px 12px; }
+
+  .profile-wrap > h2 { font-size: 19px; }
+
+  .pf-actions { flex-direction: column; }
+
+  .pf-btn-upload,
+  .pf-btn-clear,
+  .pf-btn-link {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+
+  .pf-reload-notice {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .pf-btn-reload { width: 100%; }
+}
+
+/* ── Analytics tab ───────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .a-wrap {
+    padding: 20px 12px 52px;
+    gap: 32px;
+  }
+
+  .a-section-hdr {
+    flex-wrap: wrap;
+    gap: 2px;
+  }
+
+  .a-section-title { font-size: 17px; }
+
+  .a-kpi-val { font-size: 22px; }
+
+  .a-bar-row {
+    grid-template-columns: 36px 1fr 36px;
+    gap: 6px;
+  }
+
+  .a-bar-lbl  { font-size: 11px; }
+  .a-bar-val  { font-size: 10.5px; }
+
+  .a-prod-table { font-size: 12px; }
+  .a-sz-table   { font-size: 11.5px; }
+
+  .a-kpi { padding: 13px 14px; }
+  .a-kpi-val { font-size: 22px; }
+}
+
+/* ── Toast — keep above mobile nav bar ──────────────────────── */
+@media (max-width: 640px) {
+  #toast { bottom: 24px; }
+}

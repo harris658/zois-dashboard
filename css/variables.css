@@ -1,0 +1,42 @@
+:root {
+  /* Brand */
+  --br:     #5A2C0A;
+  --br2:    #7A3D14;
+  --br-tint:#FBF5EE;
+
+  /* Surfaces */
+  --white:  #FEFCF9;
+  --bg:     #F5F0E8;
+  --bg2:    #EBE1D2;
+
+  /* Text */
+  --dark:   #1A0D04;
+  --mid:    #6B4C34;
+  --light:  #A07860;
+
+  /* Borders */
+  --border: #DDD0BC;
+  --border2:#E8DDD0;
+
+  /* Accent */
+  --tan:    #B58D62;
+  --tan2:   #D4B48A;
+
+  /* Status */
+  --ok:       #1B6E42;
+  --ok-bg:    #E8F4EE;
+  --ok-border:#B6D9C5;
+  --err:      #AD1F10;
+  --err-bg:   #FCECEA;
+  --err-border:#F0B8B2;
+  --warn:     #8A5C00;
+  --warn-bg:  #FEF5E0;
+  --warn-border:#E8CE88;
+
+  /* Type */
+  --serif: 'Playfair Display', Georgia, serif;
+  --sans:  'Jost', system-ui, sans-serif;
+
+  /* Timing */
+  --ease: cubic-bezier(.4, 0, .2, 1);
+}

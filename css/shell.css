@@ -1,0 +1,275 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--dark);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+
+.global-hdr {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.wordmark {
+  font-family: var(--serif);
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--br);
+  letter-spacing: -0.01em;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.hdr-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#tab-store, #tab-online {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+#tab-online { display: none; }
+
+/* ── Sub-header (stats bar) ──────────────────────────────────── */
+.store-hdr {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.stat {
+  font-size: 12px;
+  color: var(--mid);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.stat strong {
+  color: var(--br);
+  font-weight: 600;
+}
+
+.btn-sm {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--mid);
+  font-family: var(--sans);
+  transition: border-color .15s var(--ease), color .15s var(--ease);
+  line-height: 1;
+}
+.btn-sm:hover { border-color: var(--br); color: var(--br); }
+
+/* ── Sync + Settings ─────────────────────────────────────────── */
+.sync-btn {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 13px;
+  background: var(--br);
+  color: var(--white);
+  border: none;
+  border-radius: 18px;
+  font-family: var(--sans);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s var(--ease);
+  flex-shrink: 0;
+}
+.sync-btn:hover { background: var(--br2); }
+.sync-btn.visible { display: flex; }
+
+.settings-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--mid);
+  flex-shrink: 0;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.settings-btn:hover {
+  background: var(--bg2);
+  border-color: var(--tan);
+  color: var(--br);
+}
+
+/* ── Profile icon button ─────────────────────────────────────── */
+.profile-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--mid);
+  flex-shrink: 0;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.profile-btn:hover {
+  background: var(--bg2);
+  border-color: var(--tan);
+  color: var(--br);
+}
+.profile-btn.active {
+  background: var(--br-tint);
+  border-color: var(--br);
+  color: var(--br);
+}
+
+/* ── Sync chip ───────────────────────────────────────────── */
+.sync-chip {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--light);
+  white-space: nowrap;
+  padding: 0 4px;
+}
+
+/* ── Back to overview link ───────────────────────────────── */
+#back-overview,
+#os-back-overview {
+  padding: 8px 24px 0;
+}
+
+.back-overview-btn {
+  background: none;
+  border: none;
+  font-family: var(--sans);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--mid);
+  cursor: pointer;
+  padding: 0;
+  transition: color .15s;
+}
+.back-overview-btn:hover { color: var(--br); }
+
+/* ── Toast notification ──────────────────────────────────── */
+#toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(12px);
+  background: rgba(26,13,4,.88);
+  color: #fff;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 9px 18px;
+  border-radius: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s, transform .2s;
+  white-space: nowrap;
+  z-index: 600;
+}
+#toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ── Card share button ───────────────────────────────────── */
+.card-body {
+  position: relative;
+}
+.card-share-btn {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: #25D366;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.85;
+  transition: opacity .15s, transform .15s;
+  flex-shrink: 0;
+}
+.card-share-btn:hover {
+  opacity: 1;
+  transform: scale(1.08);
+}
+
+/* ── Modal share button ──────────────────────────────────── */
+.modal-share-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 16px;
+  padding: 11px 0;
+  background: #25D366;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-family: var(--sans);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s;
+}
+.modal-share-btn:hover { background: #1ebe5d; }
+
+.modal-copy-img-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 16px;
+  padding: 10px 0;
+  background: transparent;
+  color: var(--dk);
+  border: 1.5px solid var(--bdr);
+  border-radius: 10px;
+  font-family: var(--sans);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s;
+}
+.modal-copy-img-btn:hover { background: var(--bg2); }

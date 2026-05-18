@@ -1,0 +1,182 @@
+/* ── Home Dashboard ──────────────────────────────────────────── */
+.home-dash {
+  grid-column: 1 / -1;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 28px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.home-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.home-section-muted .hs-empty {
+  font-size: 13px;
+  color: var(--mid);
+  font-style: italic;
+}
+
+.hs-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--light);
+}
+
+/* ── Platform stat cards ─────────────────────────────────────── */
+.platform-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 700px) { .platform-cards { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 420px) { .platform-cards { grid-template-columns: 1fr; } }
+
+.platform-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+
+.platform-card:hover { border-color: var(--br); }
+
+.platform-card.pc-active {
+  border-color: var(--br);
+  background: var(--br-tint);
+}
+
+.pc-name {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--light);
+  margin-bottom: 4px;
+}
+
+.pc-num {
+  font-size: 26px;
+  font-weight: 700;
+  font-family: var(--serif);
+  color: var(--dark);
+  line-height: 1;
+}
+
+.pc-stat {
+  font-size: 12px;
+  color: var(--mid);
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.pc-skus {
+  font-size: 11px;
+  color: var(--light);
+  margin-top: 1px;
+}
+
+.pc-oos {
+  font-size: 11px;
+  color: var(--err);
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.pc-ok { color: var(--ok); }
+
+/* ── Changes section ─────────────────────────────────────────── */
+.changes-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+@media (max-width: 560px) {
+  .changes-cols { grid-template-columns: 1fr; }
+}
+
+.changes-col {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.cc-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--light);
+  margin-bottom: 10px;
+}
+
+.diff-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.diff-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.diff-code {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--dark);
+  white-space: nowrap;
+}
+
+.diff-name {
+  font-size: 11px;
+  color: var(--light);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.diff-chip {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 18px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.diff-chip.sold {
+  background: var(--ok-bg);
+  color: var(--ok);
+}
+
+.diff-chip.returned {
+  background: var(--warn-bg);
+  color: var(--warn);
+}
+
+/* ── Hints ───────────────────────────────────────────────────── */
+.home-hints {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding-top: 2px;
+}

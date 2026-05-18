@@ -1,0 +1,34 @@
+/* ── Nav Tab Switch ──────────────────────────────────────────── */
+.pill-switch {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.pill-btn {
+  padding: 5px 16px;
+  border: none;
+  background: none;
+  border-radius: 6px;
+  font-family: var(--sans);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--mid);
+  cursor: pointer;
+  transition: background .15s var(--ease), color .15s var(--ease), box-shadow .15s;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+
+.pill-btn.active {
+  background: var(--white);
+  color: var(--br);
+  font-weight: 600;
+  box-shadow: 0 1px 4px rgba(90, 44, 10, .12);
+}
+
+.pill-btn:hover:not(.active) { color: var(--dark); }

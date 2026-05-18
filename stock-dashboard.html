@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZOIS — Stock Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/shell.css">
+<link rel="stylesheet" href="css/setup.css">
+<link rel="stylesheet" href="css/filters.css">
+<link rel="stylesheet" href="css/grid.css">
+<link rel="stylesheet" href="css/modal.css">
+<link rel="stylesheet" href="css/pill.css">
+<link rel="stylesheet" href="css/online.css">
+<link rel="stylesheet" href="css/settings.css">
+<link rel="stylesheet" href="css/profile.css">
+<link rel="stylesheet" href="css/home.css">
+<link rel="stylesheet" href="css/analytics.css">
+<link rel="stylesheet" href="css/mobile.css">
+
+<style>
+/* ── Logo in header ──────────────────────────────────────────── */
+.wordmark {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.header-logo {
+  height: 80px;
+  width: auto;
+  display: block;
+  margin: -12px 0;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* ── Header refinements ──────────────────────────────────────── */
+.global-hdr {
+  height: 56px;
+  padding: 0 28px;
+  box-shadow: 0 1px 0 var(--border);
+}
+
+/* ── Sub-header stat strip ───────────────────────────────────── */
+.store-hdr {
+  background: var(--bg);
+  border-bottom: 1px solid var(--border2);
+  height: 36px;
+}
+
+/* ── Slightly warmer card shadows ────────────────────────────── */
+.a-card {
+  box-shadow: 0 2px 8px rgba(90,44,10,.04);
+}
+.a-kpi.hi {
+  box-shadow: 0 2px 10px rgba(90,44,10,.07);
+}
+
+/* ── KPI label top-border accent ─────────────────────────────── */
+.a-kpi.hi   { border-top: 2px solid var(--br);         }
+.a-kpi.ok   { border-top: 2px solid var(--ok);         }
+.a-kpi.err  { border-top: 2px solid var(--err);        }
+.a-kpi.warn { border-top: 2px solid var(--warn);       }
+
+/* ── Hint chips ──────────────────────────────────────────────── */
+.hint-chip {
+  font-size: 11.5px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  color: var(--mid);
+  font-weight: 500;
+  letter-spacing: .01em;
+}
+
+/* ── Back to Overview — make it unmissable ───────────────────── */
+#back-overview,
+#os-back-overview {
+  padding: 14px 24px 14px;
+}
+
+.back-overview-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  background: var(--white);
+  border: 1.5px solid var(--br);
+  border-radius: 22px;
+  font-family: var(--sans);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--br);
+  cursor: pointer;
+  letter-spacing: .01em;
+  transition: background .15s, box-shadow .15s;
+  box-shadow: 0 2px 8px rgba(90,44,10,.10);
+}
+.back-overview-btn:hover {
+  background: var(--br-tint);
+  box-shadow: 0 4px 14px rgba(90,44,10,.16);
+}
+
+/* ── Mobile logo ─────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .header-logo  { height: 60px; margin: -8px 0; }
+  .global-hdr   { height: 48px; padding: 0 14px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ GLOBAL SHELL ══════════════════════════════════════════════════════════ -->
+<header class="global-hdr">
+  <div class="wordmark">
+    <img src="images/logo.png" alt="ZOIS" class="header-logo">
+  </div>
+
+  <div class="pill-switch">
+    <button class="pill-btn active" id="tab-store-btn"  onclick="switchTab('store')">Store Stock</button>
+    <button class="pill-btn"        id="tab-online-btn" onclick="switchTab('online')">Online Stock</button>
+  </div>
+
+  <div class="hdr-actions">
+    <span class="sync-chip" id="sync-chip" style="display:none"></span>
+    <button class="profile-btn" id="profile-btn" onclick="switchTab('profile')" title="Data Sources" aria-label="Data Sources">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M2 13c0-2.5 1.8-4 6-4s6 1.5 6 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        <circle cx="8" cy="5.5" r="2.8" stroke="currentColor" stroke-width="1.4"/>
+      </svg>
+    </button>
+    <button class="sync-btn" id="sync-btn" onclick="syncFromDisk()" title="Sync latest from disk">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+        <path d="M12 6.5A5.5 5.5 0 0 1 1.6 10M1 6.5A5.5 5.5 0 0 1 11.4 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M11 1v2.5H8.5M2 12V9.5H4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="sync-label">Sync</span>
+    </button>
+    <button class="settings-btn" onclick="openSettings()" title="Column settings" aria-label="Column settings">
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+        <path d="M1 3.5h13M1 7.5h13M1 11.5h13" stroke="currentColor" stroke-width="1.35" stroke-linecap="round"/>
+        <circle cx="4.5"  cy="3.5"  r="1.5" fill="currentColor"/>
+        <circle cx="10.5" cy="7.5"  r="1.5" fill="currentColor"/>
+        <circle cx="5.5"  cy="11.5" r="1.5" fill="currentColor"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+
+<!-- ═══ STORE STOCK TAB ════════════════════════════════════════════════════════ -->
+<div id="tab-store">
+
+  <!-- Setup -->
+  <div id="store-setup">
+    <div class="setup-card">
+      <h2>Store Stock</h2>
+      <p>Load your product data and image folder to launch your searchable stock viewer. Everything runs locally — no internet needed for your data.</p>
+
+      <div class="setup-zones-row">
+        <div class="setup-zone-col">
+          <div class="upload-zone" id="zone-data">
+            <input type="file" id="inp-data" accept=".xlsx,.xls,.csv">
+            <span class="uz-icon">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                <rect x="5" y="3" width="18" height="24" rx="2.5" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M15 3v6h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M9 14h14M9 18h14M9 22h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <div class="uz-title">Product Data</div>
+            <div class="uz-sub">Excel (.xlsx) or CSV — product codes, colors, sizes</div>
+          </div>
+          <div class="uz-status info" id="st-data">No file selected</div>
+        </div>
+        <div class="setup-zone-col">
+          <div class="upload-zone" id="zone-imgs">
+            <input type="file" id="inp-imgs" webkitdirectory multiple accept="image/*">
+            <span class="uz-icon">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                <rect x="3" y="9" width="26" height="19" rx="2.5" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M3 15h26" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M8 9V7a1.5 1.5 0 0 1 1.5-1.5h13A1.5 1.5 0 0 1 24 7v2" stroke="currentColor" stroke-width="1.5"/>
+                <circle cx="11" cy="21" r="2.5" stroke="currentColor" stroke-width="1.3"/>
+                <path d="M7 28l5.5-5.5 3.5 3.5 5-5L28 28" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <div class="uz-title">Product Images <span style="font-size:11px;font-weight:400;color:var(--light)">(optional)</span></div>
+            <div class="uz-sub">Select the folder containing your product photos</div>
+          </div>
+          <div class="uz-status info" id="st-imgs">No folder selected — placeholders will be shown</div>
+        </div>
+      </div>
+
+      <div class="col-mapper" id="col-mapper">
+        <h4>Match columns</h4>
+        <div class="map-rows" id="map-rows"></div>
+        <div class="map-divider"></div>
+        <div class="sz-section-label">Sheet format</div>
+        <div class="fmt-toggle">
+          <label class="fmt-opt"><input type="radio" name="fmt" value="wide" id="fmt-wide" onchange="toggleFmt()"> Wide — each size is its own column</label>
+          <label class="fmt-opt"><input type="radio" name="fmt" value="long" id="fmt-long" onchange="toggleFmt()"> Long — one row per size variant</label>
+        </div>
+        <div id="wide-section">
+          <div class="sz-section-label">Size columns <span style="font-size:10px;font-weight:400;opacity:.7">(tick all that apply)</span></div>
+          <div class="sz-checks" id="sz-checks"></div>
+        </div>
+        <div id="long-section" style="display:none">
+          <div class="map-rows">
+            <div class="map-row">
+              <label class="map-label">Size column <span class="req">*</span></label>
+              <select class="map-sel" id="map-szcol"></select>
+            </div>
+            <div class="map-row">
+              <label class="map-label">Qty column <span class="req">*</span></label>
+              <select class="map-sel" id="map-qtycol"></select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-launch" id="btn-launch" disabled>Launch Dashboard</button>
+
+      <p class="setup-hint">
+        Images must be named by product code (e.g. <em>ZS001.jpg</em>).<br>
+        After uploading, match each field to your column — works with any sheet layout.
+      </p>
+    </div>
+  </div><!-- /store-setup -->
+
+  <!-- Grid -->
+  <div id="store-grid" style="display:none">
+    <div class="store-hdr">
+      <div class="stat"><strong id="s-total">0</strong> products</div>
+      <div class="stat" id="stat-shown" style="display:none"><strong id="s-shown">0</strong> shown</div>
+      <button class="btn-sm" id="btn-reload">↩ Change data</button>
+    </div>
+
+    <div class="filters" id="filters">
+      <div class="search-wrap">
+        <input type="text" id="q" placeholder="Search code or name…" oninput="applyFilters()">
+      </div>
+      <div class="fdiv"></div>
+      <div class="fg" id="product-row">
+        <span class="flabel">Product</span>
+        <select class="fsel" id="f-cat" onchange="applyFilters()">
+          <option value="">All</option>
+        </select>
+      </div>
+      <div class="fdiv" id="sz-div"></div>
+      <div class="fg" id="sz-row">
+        <span class="flabel">Size</span>
+        <select class="fsel" id="f-size" onchange="applyFilters()">
+          <option value="">All</option>
+        </select>
+      </div>
+      <div class="fdiv" id="color-div"></div>
+      <div class="fg" id="color-row">
+        <span class="flabel">Color</span>
+        <select class="fsel" id="f-color" onchange="applyFilters()">
+          <option value="">All</option>
+        </select>
+      </div>
+      <button class="btn-clear" id="btn-clear" onclick="clearFilters()">✕ Clear</button>
+      <span class="f-count" id="f-count"></span>
+    </div>
+
+    <div class="grid-area">
+      <div id="back-overview" style="display:none">
+        <button class="back-overview-btn" onclick="clearFilters()">← Overview</button>
+      </div>
+      <div class="pgrid" id="pgrid"></div>
+    </div>
+  </div><!-- /store-grid -->
+
+</div><!-- /tab-store -->
+
+
+<!-- ═══ ONLINE STOCK TAB ═══════════════════════════════════════════════════════ -->
+<div id="tab-online" style="display:none">
+
+  <!-- Setup -->
+  <div id="os-setup">
+    <div class="setup-card">
+      <h2>Online Stock</h2>
+      <p>Load your online stock data to compare expected vs actual inventory across all sizes. Everything runs locally — no internet needed.</p>
+
+      <div class="setup-zones-row">
+        <div class="setup-zone-col">
+          <div class="upload-zone" id="os-zone">
+            <input type="file" id="os-inp" accept=".xlsx,.xls,.csv">
+            <span class="uz-icon">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                <path d="M16 4L28 11v10L16 28 4 21V11z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                <path d="M4 11l12 7 12-7M16 28V18" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M10 7.5L22 14.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <div class="uz-title">Online Stock File</div>
+            <div class="uz-sub">Excel or CSV — Design Number, Size, Expected Qty, Actual Count</div>
+          </div>
+          <div class="uz-status info" id="os-st">No file selected</div>
+        </div>
+        <div class="setup-zone-col">
+          <div class="upload-zone" id="os-zone-imgs">
+            <input type="file" id="os-inp-imgs" webkitdirectory multiple accept="image/*">
+            <span class="uz-icon">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                <rect x="3" y="9" width="26" height="19" rx="2.5" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M3 15h26" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M8 9V7a1.5 1.5 0 0 1 1.5-1.5h13A1.5 1.5 0 0 1 24 7v2" stroke="currentColor" stroke-width="1.5"/>
+                <circle cx="11" cy="21" r="2.5" stroke="currentColor" stroke-width="1.3"/>
+                <path d="M7 28l5.5-5.5 3.5 3.5 5-5L28 28" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <div class="uz-title">Product Images <span style="font-size:11px;font-weight:400;color:var(--light)">(optional)</span></div>
+            <div class="uz-sub">Select the folder containing your product photos</div>
+          </div>
+          <div class="uz-status info" id="os-st-imgs">No folder selected — placeholders will be shown</div>
+        </div>
+      </div>
+
+      <div class="col-mapper" id="os-col-mapper" style="display:none">
+        <h4>Match columns</h4>
+        <div class="map-rows" id="os-map-rows"></div>
+      </div>
+
+      <button class="btn-launch" id="os-launch" disabled onclick="launchOnline()">View Online Stock</button>
+
+      <p class="setup-hint">
+        File must include Design Number, Size, Expected Qty, and Actual Count columns.<br>
+        After uploading, match each field to your column — works with any sheet layout.
+      </p>
+    </div>
+  </div><!-- /os-setup -->
+
+  <!-- Grid -->
+  <div id="os-grid-wrap" style="display:none;flex-direction:column;flex:1">
+    <div class="store-hdr">
+      <div class="stat"><strong id="os-total">0</strong> products</div>
+      <div class="stat" id="os-stat-shown" style="display:none"><strong id="os-shown">0</strong> shown</div>
+      <button class="btn-sm" id="os-btn-reload" onclick="document.getElementById('os-setup').style.display='';document.getElementById('os-grid-wrap').style.display='none'">↩ Change data</button>
+    </div>
+
+    <div class="filters">
+      <div class="search-wrap">
+        <input type="text" id="os-q" placeholder="Search code or name…" oninput="applyOsFilters()">
+      </div>
+      <div class="fdiv"></div>
+      <div class="fg" id="os-cat-row" style="display:none">
+        <span class="flabel">Product</span>
+        <select class="fsel" id="os-f-cat" onchange="applyOsFilters()">
+          <option value="">All</option>
+        </select>
+      </div>
+      <div class="fdiv" id="os-cat-fdiv" style="display:none"></div>
+      <div class="fg">
+        <span class="flabel">Size</span>
+        <select class="fsel" id="os-f-size" onchange="applyOsFilters()">
+          <option value="">All</option>
+        </select>
+      </div>
+      <div class="fdiv"></div>
+      <div class="fg">
+        <span class="flabel">Color</span>
+        <select class="fsel" id="os-f-color" onchange="applyOsFilters()">
+          <option value="">All</option>
+        </select>
+      </div>
+      <div class="fdiv"></div>
+      <div class="fg">
+        <span class="flabel">Status</span>
+        <select class="fsel" id="os-f-status" onchange="applyOsFilters()">
+          <option value="">All</option>
+          <option value="diff">Has differences</option>
+          <option value="exact">Exact match</option>
+          <option value="out">Out of stock</option>
+        </select>
+      </div>
+      <button class="btn-clear" id="os-btn-clear" onclick="clearOsFilters()" style="display:none">✕ Clear</button>
+      <span class="f-count" id="os-f-count"></span>
+    </div>
+
+    <div class="grid-area">
+      <div id="os-back-overview" style="display:none">
+        <button class="back-overview-btn" onclick="clearOsFilters()">← Overview</button>
+      </div>
+      <div class="pgrid" id="os-pgrid"></div>
+    </div>
+  </div>
+
+</div><!-- /tab-online -->
+
+
+<!-- ═══ PROFILE TAB ════════════════════════════════════════════════════════════ -->
+<div id="tab-profile" style="display:none">
+  <div class="profile-wrap">
+    <h2>Data Sources</h2>
+    <p>Link a file on your PC — the dashboard reads the latest version automatically every time it opens. Or upload a copy if you prefer.</p>
+
+    <div class="profile-card">
+      <h3>Store Stock</h3>
+      <div id="pf-store-status"><div class="pf-empty">No file saved</div></div>
+      <div class="pf-actions">
+        <button class="pf-btn-link" id="pf-store-link-btn" onclick="linkFileLocation('store')" style="display:none">Link file on disk</button>
+        <button class="pf-btn-upload">
+          Upload a copy
+          <input type="file" id="pf-store-inp" accept=".xlsx,.xls,.csv">
+        </button>
+        <button class="pf-btn-clear" onclick="clearCachedFile('store')">Clear</button>
+      </div>
+    </div>
+
+    <div class="profile-card">
+      <h3>Online Stock</h3>
+      <div id="pf-online-status"><div class="pf-empty">No file saved</div></div>
+      <div class="pf-actions">
+        <button class="pf-btn-link" id="pf-online-link-btn" onclick="linkFileLocation('online')" style="display:none">Link file on disk</button>
+        <button class="pf-btn-upload">
+          Upload a copy
+          <input type="file" id="pf-online-inp" accept=".xlsx,.xls,.csv">
+        </button>
+        <button class="pf-btn-clear" onclick="clearCachedFile('online')">Clear</button>
+      </div>
+    </div>
+  </div>
+</div><!-- /tab-profile -->
+
+
+<!-- ═══ PRODUCT MODAL ══════════════════════════════════════════════════════════ -->
+<div class="overlay" id="overlay" style="display:none" onclick="overlayClick(event)">
+  <div class="mbox">
+    <div class="mimg" id="mimg"></div>
+    <div class="mbody">
+      <div class="mhdr">
+        <div>
+          <div class="mcode" id="mcode"></div>
+          <div class="mname" id="mname"></div>
+        </div>
+        <button class="xbtn" onclick="closeModal()" aria-label="Close">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="mdetails" id="mdetails"></div>
+      <div class="msizes" id="msizes">
+        <h4>Size Availability</h4>
+        <div class="msizes-grid" id="msizes-grid"></div>
+      </div>
+      <div id="os-size-table" style="display:none"></div>
+      <button class="modal-copy-img-btn" id="modal-copy-img-btn" onclick="modalCopyImage()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        </svg>
+        Copy Image
+      </button>
+      <button class="modal-share-btn" id="modal-share-btn" onclick="modalShareProduct()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+          <path d="M11.9 0C5.338 0 0 5.338 0 11.9c0 2.1.553 4.07 1.518 5.773L.044 23.387a.5.5 0 0 0 .62.62l5.714-1.474A11.858 11.858 0 0 0 11.9 23.8C18.462 23.8 23.8 18.462 23.8 11.9S18.462 0 11.9 0zm0 21.8a9.858 9.858 0 0 1-5.14-1.446.5.5 0 0 0-.363-.06l-4.173 1.077 1.077-4.173a.5.5 0 0 0-.06-.363A9.858 9.858 0 0 1 1.9 11.9C1.9 6.44 6.44 1.9 11.9 1.9S21.9 6.44 21.9 11.9 17.36 21.8 11.9 21.8z"/>
+        </svg>
+        Share on WhatsApp
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══ SETTINGS DRAWER ════════════════════════════════════════════════════════ -->
+
+<div id="toast"></div>
+<div class="sdrawer-overlay" id="sdrawer-overlay" onclick="closeSettings()"></div>
+<div class="sdrawer" id="sdrawer">
+  <div class="sdrawer-hdr">
+    <h3>Column Settings</h3>
+    <button class="xbtn" onclick="closeSettings()" aria-label="Close settings">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+        <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+  <div class="sdrawer-body">
+    <p class="sdrawer-hint">Enter your Excel column names exactly as they appear. Saved in your browser — auto-applied every time you load a file.</p>
+    <div class="sdrawer-section">
+      <h4>Store Stock</h4>
+      <div class="srow"><label>Product Code <span class="req">*</span></label><input id="sc-code" placeholder="e.g. Product Code"></div>
+      <div class="srow"><label>Product Name</label><input id="sc-name" placeholder="e.g. Product Name"></div>
+      <div class="srow"><label>Color</label><input id="sc-color" placeholder="e.g. Color"></div>
+      <div class="srow"><label>Category</label><input id="sc-cat" placeholder="e.g. Category"></div>
+      <div class="srow"><label>Price / MRP</label><input id="sc-price" placeholder="e.g. MRP"></div>
+      <div class="srow"><label>Size columns <span style="font-weight:400;font-size:11px;color:var(--light)">(comma-separated)</span></label><input id="sc-sizes" placeholder="e.g. XS, S, M, L, XL, XXL"></div>
+    </div>
+    <div class="sdrawer-section">
+      <h4>Online Stock</h4>
+      <div class="srow"><label>Design Number <span class="req">*</span></label><input id="oc-code" placeholder="e.g. Design Number"></div>
+      <div class="srow"><label>Product Name</label><input id="oc-name" placeholder="e.g. Product Name"></div>
+      <div class="srow"><label>Color</label><input id="oc-color" placeholder="e.g. Color"></div>
+      <div class="srow"><label>Size <span class="req">*</span></label><input id="oc-size" placeholder="e.g. Size"></div>
+      <div class="srow"><label>Expected Qty <span class="req">*</span></label><input id="oc-expected" placeholder="e.g. Expected Qty"></div>
+      <div class="srow"><label>Actual Count <span class="req">*</span></label><input id="oc-actual" placeholder="e.g. Actual Count"></div>
+      <div class="srow"><label>Difference</label><input id="oc-diff" placeholder="e.g. Difference (optional)"></div>
+    </div>
+  </div>
+  <div class="sdrawer-footer">
+    <button class="sdrawer-save" onclick="saveSettings()">Save settings</button>
+    <button class="sdrawer-clear" onclick="clearSettings()">Clear all</button>
+  </div>
+</div>
+
+
+<script src="js/state.js"></script>
+<script src="js/idb.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/parse.js"></script>
+<script src="js/store-filters.js"></script>
+<script src="js/store-render.js"></script>
+<script src="js/store-modal.js"></script>
+<script src="js/online.js"></script>
+<script src="js/profile.js"></script>
+<script src="js/tabs.js"></script>
+<script src="js/analytics.js"></script>
+</body>
+</html>
