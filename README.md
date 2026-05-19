@@ -1,6 +1,6 @@
 # ZOIS Dashboard
 
-Stock management dashboard for ZOIS — tracks store inventory, online platform listings, and daily sales analytics.
+Stock management dashboard for ZOIS - tracks store inventory, online platform listings, and daily sales analytics.
 
 **Live:** https://harris658.github.io/zois-dashboard/
 
