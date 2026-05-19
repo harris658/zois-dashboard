@@ -12,7 +12,7 @@ Stock management dashboard for ZOIS - tracks store inventory, online platform li
 1. Open the link above in **Chrome** (Android) or **Safari** (iPhone)
 2. Android: tap the browser menu → **Add to Home Screen**
 3. iPhone: tap the Share button → **Add to Home Screen**
-4. Done — the ZOIS Dashboard icon appears on your home screen
+4. Done - the ZOIS Dashboard icon appears on your home screen
 
 ### Install on PC
 1. Open the link above in **Chrome** or **Edge**
