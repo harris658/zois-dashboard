@@ -62,3 +62,9 @@ def test_standard_sizes_filters_products():
     src = (ROOT / "js" / "parse.js").read_text()
     assert "products.filter" in src
     assert "STANDARD_SIZES.some" in src
+
+def test_sort_styles_in_built_html():
+    html = (DIST / "index.html").read_text()
+    assert "sort-btn" in html
+    assert "sort-panel" in html
+    assert "sort-option" in html

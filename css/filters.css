@@ -126,3 +126,79 @@
   margin-left: auto;
   white-space: nowrap;
 }
+
+/* ── Sort Button ──────────────────────────────────────────────── */
+.sort-wrap {
+  position: relative;
+}
+
+.sort-btn {
+  position: relative;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 7px 9px;
+  cursor: pointer;
+  color: var(--mid);
+  display: flex;
+  align-items: center;
+  transition: border-color .15s, color .15s, background .15s;
+  font-family: var(--sans);
+}
+.sort-btn:hover {
+  border-color: var(--tan2);
+  color: var(--br);
+}
+.sort-btn.active {
+  border-color: var(--br);
+  color: var(--br);
+  background: var(--br-tint);
+}
+
+.sort-dot {
+  display: none;
+  width: 6px;
+  height: 6px;
+  background: var(--br);
+  border-radius: 50%;
+  position: absolute;
+  top: 3px;
+  right: 3px;
+}
+.sort-btn.active .sort-dot {
+  display: block;
+}
+
+.sort-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(90,44,10,.12);
+  min-width: 190px;
+  z-index: 100;
+  overflow: hidden;
+}
+
+.sort-option {
+  display: block;
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 12.5px;
+  font-family: var(--sans);
+  color: var(--dark);
+  cursor: pointer;
+  border: none;
+  background: none;
+  text-align: left;
+  transition: background .1s;
+}
+.sort-option:hover { background: var(--bg); }
+.sort-option.active {
+  background: var(--br-tint);
+  color: var(--br);
+  font-weight: 500;
+}
+.sort-option + .sort-option { border-top: 1px solid var(--border2); }
