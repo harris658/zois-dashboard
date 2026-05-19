@@ -90,3 +90,9 @@ def test_store_sort_options_defined():
     assert "STORE_SORT_OPTIONS" in src
     assert "toggleSortPanel" in src
     assert "selectSort" in src
+
+def test_online_sort_fns_in_online_js():
+    src = (ROOT / "js" / "online.js").read_text()
+    assert "function sortOnlineProducts" in src
+    assert "toggleOsSortPanel" in src
+    assert "selectOsSort" in src

@@ -2,6 +2,45 @@
 // ONLINE STOCK TAB
 // ══════════════════════════════════════════════════════════════════════════
 
+window._onlineSort = null;
+
+const ONLINE_SORT_OPTIONS = [
+  { field: 'code', dir: 'asc',  label: 'Code — A to Z' },
+  { field: 'code', dir: 'desc', label: 'Code — Z to A' },
+];
+
+function sortOnlineProducts(list) {
+  if (!window._onlineSort) return list;
+  const { dir } = window._onlineSort;
+  return [...list].sort((a, b) =>
+    dir === 'asc' ? a.code.localeCompare(b.code) : b.code.localeCompare(a.code)
+  );
+}
+
+function toggleOsSortPanel() {
+  const panel = document.getElementById('os-sort-panel');
+  if (panel.style.display !== 'none') { panel.style.display = 'none'; return; }
+  panel.innerHTML = ONLINE_SORT_OPTIONS.map(opt => {
+    const active = window._onlineSort &&
+      window._onlineSort.field === opt.field &&
+      window._onlineSort.dir   === opt.dir;
+    return '<button class="sort-option' + (active ? ' active' : '') + '" ' +
+      'onclick="selectOsSort(\'' + opt.field + '\',\'' + opt.dir + '\')">' +
+      opt.label + '</button>';
+  }).join('');
+  panel.style.display = 'block';
+}
+
+function selectOsSort(field, dir) {
+  const isActive = window._onlineSort &&
+    window._onlineSort.field === field &&
+    window._onlineSort.dir   === dir;
+  window._onlineSort = isActive ? null : { field, dir };
+  document.getElementById('os-sort-panel').style.display = 'none';
+  document.getElementById('os-btn-sort').classList.toggle('active', !!window._onlineSort);
+  applyOsFilters();
+}
+
 // ── File loading ───────────────────────────────────────────────────────────
 document.getElementById('os-inp').addEventListener('change', async () => {
   const f = document.getElementById('os-inp').files[0];
@@ -386,6 +425,9 @@ function applyOsFilters() {
 }
 
 function clearOsFilters() {
+  window._onlineSort = null;
+  document.getElementById('os-btn-sort').classList.remove('active');
+  document.getElementById('os-sort-panel').style.display = 'none';
   document.getElementById('os-q').value = '';
   document.getElementById('os-f-color').value = '';
   document.getElementById('os-f-status').value = '';
@@ -420,6 +462,7 @@ function chipClass(s) {
 }
 
 function renderOsGrid(list) {
+  list = sortOnlineProducts(list);
   const grid = document.getElementById('os-pgrid');
   if (!list.length) {
     grid.innerHTML = '<div class="empty-state"><h3>No products found</h3><p>Try adjusting your filters</p></div>';
