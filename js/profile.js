@@ -270,11 +270,18 @@ async function initFromCache() {
   try {
     const handle = await idbGet('imgs-handle');
     if (handle) {
+      const meta = await idbGet('imgs-meta');
+      const folderName = (meta && meta.name) || handle.name || 'Images folder';
       const perm = await handle.queryPermission({ mode: 'read' });
       if (perm === 'granted') {
         await loadImagesFromHandle(handle);
+        const now = new Date().toISOString();
+        await idbSave('imgs-meta', { name: folderName, date: now });
+        renderImgFolderStatus(folderName, now);
       } else {
-        const statusEl = document.getElementById('st-imgs');
+        // New session — show status and reload button, wait for user gesture
+        renderImgFolderStatus(folderName, meta ? meta.date : null);
+        const statusEl = document.getElementById('pf-imgs-status');
         if (statusEl) {
           const notice = document.createElement('div');
           notice.className = 'pf-reload-notice';
@@ -282,7 +289,6 @@ async function initFromCache() {
           notice.innerHTML = '<span>Image folder linked but needs permission to read.</span>' +
             '<button class="pf-btn-reload" onclick="reloadImgsFromHandle()">Reload images</button>';
           statusEl.after(notice);
-          statusEl.textContent = 'Image folder saved — click to reload';
         }
       }
     }
@@ -298,8 +304,56 @@ async function reloadImgsFromHandle() {
     const notice = document.getElementById('pf-imgs-reload');
     if (notice) notice.remove();
     await loadImagesFromHandle(handle);
+    const now = new Date().toISOString();
+    const meta = await idbGet('imgs-meta');
+    const name = (meta && meta.name) || handle.name || 'Images folder';
+    await idbSave('imgs-meta', { name, date: now });
+    renderImgFolderStatus(name, now);
     showToast('Images reloaded ✓');
   } catch(e) { showToast('Error: ' + e.message); }
+}
+
+function renderImgFolderStatus(name, date) {
+  const el = document.getElementById('pf-imgs-status');
+  if (!el) return;
+  const d = date ? new Date(date).toLocaleString('en-IN', {day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+  el.innerHTML = '<div class="pf-file-info"><span class="pf-file-icon">🖼️</span><div>' +
+    '<div class="pf-linked-badge">🔗 Linked to folder — auto-reloads</div>' +
+    '<div class="pf-file-name">' + escHtml(name) + '</div>' +
+    '<div class="pf-file-date">Last read ' + d + '</div>' +
+    '</div></div>';
+  const clearBtn = document.getElementById('pf-imgs-clear-btn');
+  if (clearBtn) clearBtn.style.display = '';
+  const linkBtn = document.getElementById('pf-imgs-link-btn');
+  if (linkBtn) linkBtn.textContent = '🔗 Re-link folder';
+}
+
+async function linkImgFolder() {
+  if (!window.showDirectoryPicker) { showToast('Not supported in this browser — use Chrome or Edge'); return; }
+  try {
+    const handle = await window.showDirectoryPicker({ mode: 'read' });
+    await idbSave('imgs-handle', handle);
+    await loadImagesFromHandle(handle);
+    const now = new Date().toISOString();
+    await idbSave('imgs-meta', { name: handle.name, date: now });
+    renderImgFolderStatus(handle.name, now);
+    showToast('Image folder linked ✓ — auto-reloads next time');
+  } catch(e) {
+    if (e.name !== 'AbortError') showToast('Error: ' + e.message);
+  }
+}
+
+async function clearImgFolder() {
+  await idbDelete('imgs-handle');
+  await idbDelete('imgs-meta');
+  imgMap = {};
+  const el = document.getElementById('pf-imgs-status');
+  if (el) el.innerHTML = '<div class="pf-empty">No folder linked</div>';
+  const clearBtn = document.getElementById('pf-imgs-clear-btn');
+  if (clearBtn) clearBtn.style.display = 'none';
+  const linkBtn = document.getElementById('pf-imgs-link-btn');
+  if (linkBtn) linkBtn.textContent = 'Link folder on disk';
+  showToast('Image folder cleared');
 }
 
 async function syncFromDisk() {

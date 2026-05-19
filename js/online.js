@@ -404,7 +404,7 @@ function applyOsFilters() {
     if (q && !p.baseCode.toLowerCase().includes(q) && !p.name.toLowerCase().includes(q)) return false;
     if (color  && p.color    !== color) return false;
     if (cat    && p.category !== cat)   return false;
-    if (size   && !p.sizes.some(s => s.size === size)) return false;
+    if (size   && !p.sizes.some(s => s.size === size && s.actual > 0)) return false;
     if (osPlatformFilter) {
       const listed = platformStylesMap[p.baseCode.toLowerCase()];
       if (!listed || !listed.has(osPlatformFilter)) return false;
