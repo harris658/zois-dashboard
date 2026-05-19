@@ -13,7 +13,7 @@ function sortOnlineProducts(list) {
   if (!window._onlineSort) return list;
   const { dir } = window._onlineSort;
   return [...list].sort((a, b) =>
-    dir === 'asc' ? a.code.localeCompare(b.code) : b.code.localeCompare(a.code)
+    dir === 'asc' ? a.baseCode.localeCompare(b.baseCode) : b.baseCode.localeCompare(a.baseCode)
   );
 }
 
