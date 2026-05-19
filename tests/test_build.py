@@ -68,3 +68,15 @@ def test_sort_styles_in_built_html():
     assert "sort-btn" in html
     assert "sort-panel" in html
     assert "sort-option" in html
+
+def test_store_sort_button_in_html():
+    html = (DIST / "index.html").read_text()
+    assert 'id="btn-sort"' in html
+    assert 'id="sort-panel"' in html
+    assert 'id="sort-dot"' in html
+
+def test_online_sort_button_in_html():
+    html = (DIST / "index.html").read_text()
+    assert 'id="os-btn-sort"' in html
+    assert 'id="os-sort-panel"' in html
+    assert 'id="os-sort-dot"' in html
