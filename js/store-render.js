@@ -16,12 +16,13 @@ async function shareProduct(code, name, price, availSizes) {
   window.open(url, '_blank');
 }
 
-async function copyProductImage(code) {
+async function copyProductImage(code, idx = 0) {
   const imgs = getImg(code);
   if (!imgs || !imgs.length) { showToast('No image to copy'); return; }
+  const imgIdx = Math.min(idx, imgs.length - 1);
   try {
     // Pass a Promise to ClipboardItem so user-gesture context is preserved while fetch resolves
-    const blobPromise = fetch(imgs[0]).then(r => r.blob()).then(blob =>
+    const blobPromise = fetch(imgs[imgIdx]).then(r => r.blob()).then(blob =>
       new Promise((res, rej) => {
         const img = new Image();
         img.onload = () => {
