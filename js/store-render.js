@@ -44,14 +44,16 @@ async function copyProductImage(code, idx = 0) {
 }
 
 // ── Image lookup ──────────────────────────────────────────────────────────
-function getImg(code) {
+function _lookupImg(map, code) {
   const k = code.toLowerCase().trim();
-  return imgMap[k]
-    || imgMap[k.replace(/[\s_-]/g,'')]
-    || imgMap[k.replace(/\s/g,'_')]
-    || imgMap[k.replace(/\s/g,'-')]
+  return map[k]
+    || map[k.replace(/[\s_-]/g,'')]
+    || map[k.replace(/\s/g,'_')]
+    || map[k.replace(/\s/g,'-')]
     || null;
 }
+function getImg(code)   { return _lookupImg(imgMap,   code); }
+function getOsImg(code) { return _lookupImg(osImgMap, code); }
 
 // ── Sort ──────────────────────────────────────────────────────────────────
 function sortProducts(list) {

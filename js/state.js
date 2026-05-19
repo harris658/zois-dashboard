@@ -2,6 +2,7 @@
 let products = [];
 let allRows  = [];
 let imgMap   = {};
+let osImgMap = {};
 let sizeCols = [];
 
 // ── Online Stock State ────────────────────────────────────────────────────

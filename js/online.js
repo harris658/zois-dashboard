@@ -80,16 +80,16 @@ document.getElementById('os-inp').addEventListener('change', async () => {
 });
 
 document.getElementById('os-inp-imgs').addEventListener('change', () => {
-  imgMap = {};
+  osImgMap = {};
   let n = 0;
   for (const f of document.getElementById('os-inp-imgs').files) {
     if (!f.type.startsWith('image/')) continue;
     const url = URL.createObjectURL(f);
     const raw = f.name.replace(/\.[^/.]+$/, '').toLowerCase().trim();
     const key = raw.replace(/[\s\-_]+\d+$/, '').trim() || raw;
-    (imgMap[key] = imgMap[key] || []).push(url);
+    (osImgMap[key] = osImgMap[key] || []).push(url);
     const prefix = key.replace(/-rs\d+$/i, '');
-    if (prefix !== key) (imgMap[prefix] = imgMap[prefix] || []).push(url);
+    if (prefix !== key) (osImgMap[prefix] = osImgMap[prefix] || []).push(url);
     n++;
   }
   const el = document.getElementById('os-st-imgs');
@@ -470,7 +470,7 @@ function renderOsGrid(list) {
   }
   grid.innerHTML = '';
   list.forEach(p => {
-    const src = (getImg(p.baseCode) || [])[0];
+    const src = (getOsImg(p.baseCode) || [])[0];
     const chips = p.sizes.map(s => {
       const cls = chipClass(s);
       const sign = s.diff > 0 ? '+' : '';
@@ -514,7 +514,7 @@ function renderOsGrid(list) {
 function openOsModal(p) {
   currentModalProduct = p;
   currentModalType    = 'online';
-  renderCarousel(getImg(p.baseCode) || [], p.baseCode);
+  renderCarousel(getOsImg(p.baseCode) || [], p.baseCode);
   document.getElementById('mimg').style.display = '';
   document.getElementById('mcode').textContent = p.baseCode;
   document.getElementById('mname').textContent = p.name;
