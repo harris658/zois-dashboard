@@ -37,6 +37,40 @@ inpImgs.addEventListener('change', () => {
   document.getElementById('zone-imgs').classList.add('done');
 });
 
+async function loadImagesFromHandle(dirHandle) {
+  imgMap = {};
+  let n = 0;
+  for await (const [name, entry] of dirHandle.entries()) {
+    if (entry.kind !== 'file') continue;
+    const file = await entry.getFile();
+    if (!file.type.startsWith('image/')) continue;
+    const url = URL.createObjectURL(file);
+    const raw = name.replace(/\.[^/.]+$/, '').toLowerCase().trim();
+    const key = raw.replace(/[\s\-_]+\d+$/, '').trim() || raw;
+    (imgMap[key] = imgMap[key] || []).push(url);
+    const prefix = key.replace(/-rs\d+$/i, '');
+    if (prefix !== key) (imgMap[prefix] = imgMap[prefix] || []).push(url);
+    n++;
+  }
+  setStatus('st-imgs', 'ok', '✓ ' + n + ' images linked');
+  document.getElementById('zone-imgs').classList.add('done');
+  return n;
+}
+
+async function pickImageFolder(e) {
+  if (!window.showDirectoryPicker) return;
+  e.preventDefault();
+  e.stopPropagation();
+  try {
+    const handle = await window.showDirectoryPicker({ mode: 'read' });
+    await idbSave('imgs-handle', handle);
+    await loadImagesFromHandle(handle);
+    showToast('Image folder linked ✓ — auto-loads next time');
+  } catch(err) {
+    if (err.name !== 'AbortError') showToast('Error: ' + err.message);
+  }
+}
+
 if (btnLaunch) btnLaunch.addEventListener('click', launch);
 document.getElementById('btn-reload').addEventListener('click', () => {
   document.getElementById('store-grid').style.display = 'none';

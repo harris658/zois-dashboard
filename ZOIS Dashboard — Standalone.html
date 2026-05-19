@@ -2298,7 +2298,7 @@ body {
           <div class="uz-status info" id="st-data">No file selected</div>
         </div>
         <div class="setup-zone-col">
-          <div class="upload-zone" id="zone-imgs">
+          <div class="upload-zone" id="zone-imgs" onclick="pickImageFolder(event)">
             <input type="file" id="inp-imgs" webkitdirectory multiple accept="image/*">
             <span class="uz-icon">
               <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
@@ -2807,6 +2807,40 @@ inpImgs.addEventListener('change', () => {
   setStatus('st-imgs', 'ok', '✓ ' + n + ' images loaded');
   document.getElementById('zone-imgs').classList.add('done');
 });
+
+async function loadImagesFromHandle(dirHandle) {
+  imgMap = {};
+  let n = 0;
+  for await (const [name, entry] of dirHandle.entries()) {
+    if (entry.kind !== 'file') continue;
+    const file = await entry.getFile();
+    if (!file.type.startsWith('image/')) continue;
+    const url = URL.createObjectURL(file);
+    const raw = name.replace(/\.[^/.]+$/, '').toLowerCase().trim();
+    const key = raw.replace(/[\s\-_]+\d+$/, '').trim() || raw;
+    (imgMap[key] = imgMap[key] || []).push(url);
+    const prefix = key.replace(/-rs\d+$/i, '');
+    if (prefix !== key) (imgMap[prefix] = imgMap[prefix] || []).push(url);
+    n++;
+  }
+  setStatus('st-imgs', 'ok', '✓ ' + n + ' images linked');
+  document.getElementById('zone-imgs').classList.add('done');
+  return n;
+}
+
+async function pickImageFolder(e) {
+  if (!window.showDirectoryPicker) return;
+  e.preventDefault();
+  e.stopPropagation();
+  try {
+    const handle = await window.showDirectoryPicker({ mode: 'read' });
+    await idbSave('imgs-handle', handle);
+    await loadImagesFromHandle(handle);
+    showToast('Image folder linked ✓ — auto-loads next time');
+  } catch(err) {
+    if (err.name !== 'AbortError') showToast('Error: ' + err.message);
+  }
+}
 
 if (btnLaunch) btnLaunch.addEventListener('click', launch);
 document.getElementById('btn-reload').addEventListener('click', () => {
@@ -4197,6 +4231,41 @@ async function initFromCache() {
       }
     }
   } catch(e) { console.log('initFromCache online error:', e); showToast('Restore failed — please upload your file again'); }
+
+  // ── Images ─────────────────────────────────────────────────────────────
+  try {
+    const handle = await idbGet('imgs-handle');
+    if (handle) {
+      const perm = await handle.queryPermission({ mode: 'read' });
+      if (perm === 'granted') {
+        await loadImagesFromHandle(handle);
+      } else {
+        const statusEl = document.getElementById('st-imgs');
+        if (statusEl) {
+          const notice = document.createElement('div');
+          notice.className = 'pf-reload-notice';
+          notice.id = 'pf-imgs-reload';
+          notice.innerHTML = '<span>Image folder linked but needs permission to read.</span>' +
+            '<button class="pf-btn-reload" onclick="reloadImgsFromHandle()">Reload images</button>';
+          statusEl.after(notice);
+          statusEl.textContent = 'Image folder saved — click to reload';
+        }
+      }
+    }
+  } catch(e) { /* images are optional */ }
+}
+
+async function reloadImgsFromHandle() {
+  try {
+    const handle = await idbGet('imgs-handle');
+    if (!handle) return;
+    const perm = await handle.requestPermission({ mode: 'read' });
+    if (perm !== 'granted') { showToast('Permission denied'); return; }
+    const notice = document.getElementById('pf-imgs-reload');
+    if (notice) notice.remove();
+    await loadImagesFromHandle(handle);
+    showToast('Images reloaded ✓');
+  } catch(e) { showToast('Error: ' + e.message); }
 }
 
 async function syncFromDisk() {

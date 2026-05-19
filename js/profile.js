@@ -265,6 +265,41 @@ async function initFromCache() {
       }
     }
   } catch(e) { console.log('initFromCache online error:', e); showToast('Restore failed — please upload your file again'); }
+
+  // ── Images ─────────────────────────────────────────────────────────────
+  try {
+    const handle = await idbGet('imgs-handle');
+    if (handle) {
+      const perm = await handle.queryPermission({ mode: 'read' });
+      if (perm === 'granted') {
+        await loadImagesFromHandle(handle);
+      } else {
+        const statusEl = document.getElementById('st-imgs');
+        if (statusEl) {
+          const notice = document.createElement('div');
+          notice.className = 'pf-reload-notice';
+          notice.id = 'pf-imgs-reload';
+          notice.innerHTML = '<span>Image folder linked but needs permission to read.</span>' +
+            '<button class="pf-btn-reload" onclick="reloadImgsFromHandle()">Reload images</button>';
+          statusEl.after(notice);
+          statusEl.textContent = 'Image folder saved — click to reload';
+        }
+      }
+    }
+  } catch(e) { /* images are optional */ }
+}
+
+async function reloadImgsFromHandle() {
+  try {
+    const handle = await idbGet('imgs-handle');
+    if (!handle) return;
+    const perm = await handle.requestPermission({ mode: 'read' });
+    if (perm !== 'granted') { showToast('Permission denied'); return; }
+    const notice = document.getElementById('pf-imgs-reload');
+    if (notice) notice.remove();
+    await loadImagesFromHandle(handle);
+    showToast('Images reloaded ✓');
+  } catch(e) { showToast('Error: ' + e.message); }
 }
 
 async function syncFromDisk() {
