@@ -53,3 +53,12 @@ def test_icon_192_correct_size():
 def test_icon_512_correct_size():
     img = Image.open(DIST / "icons" / "icon-512.png")
     assert img.size == (512, 512)
+
+def test_standard_sizes_constant_in_source():
+    src = (ROOT / "js" / "parse.js").read_text()
+    assert "STANDARD_SIZES" in src
+
+def test_standard_sizes_filters_products():
+    src = (ROOT / "js" / "parse.js").read_text()
+    assert "products.filter" in src
+    assert "STANDARD_SIZES.some" in src

@@ -1,4 +1,6 @@
 // ── Setup ─────────────────────────────────────────────────────────────────
+const STANDARD_SIZES = ['S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
+
 const inpData   = document.getElementById('inp-data');
 const inpImgs   = document.getElementById('inp-imgs');
 const btnLaunch = document.getElementById('btn-launch');
@@ -293,6 +295,14 @@ function launch() {
     sizeCols = [...document.querySelectorAll('#sz-checks input:checked')].map(c => c.value);
     processRows(allRows, codeC, nameC, colorC, catC, priceC);
   }
+
+  // Restrict to standard apparel sizes only
+  sizeCols = sizeCols.filter(s => STANDARD_SIZES.some(std => std.toLowerCase() === s.toLowerCase()));
+  products = products.filter(p =>
+    STANDARD_SIZES.some(s =>
+      Object.keys(p.sizes).some(k => k.toLowerCase() === s.toLowerCase() && p.sizes[k] > 0)
+    )
+  );
 
   const _isLong2=document.getElementById('fmt-long').checked;
   localStorage.setItem(SETTINGS_KEY, JSON.stringify({...(loadSettings()||{}), store:{
