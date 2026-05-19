@@ -73,7 +73,27 @@ pip install pytest Pillow
 pytest tests/ -v
 ```
 
-9 tests verify the build output: correct files exist, manifest fields are valid, icons are the right size, CSS and SW registration are present.
+17 tests verify the build output: correct files exist, manifest fields are valid, icons are the right size, CSS and SW registration are present, sort controls are in the HTML, and size filtering logic is in the source.
+
+---
+
+## Recent updates
+
+### Store stock — apparel-only filter
+Store stock now only shows items that have at least one of S / M / L / XL / XXL / XXXL in stock. Items imported from Ginesys with non-standard sizes (waist measurements, numeric sizes, etc.) are excluded automatically at parse time. The size filter dropdown and all unit counts only reflect these standard sizes.
+
+### Sort button on store and online grids
+Both the store and online stock grids have a sort button (↕) at the right end of the filter bar.
+
+**Store sort options:**
+- Units in stock — High to Low / Low to High
+- Price — High to Low / Low to High
+- Product code — A to Z
+
+**Online sort options:**
+- Product code — A to Z / Z to A
+
+Sort works standalone (no filter required) or combined with any active filter. An indicator dot on the button shows when a sort is active. Clicking the active option again clears it. The Clear button also resets the sort.
 
 ---
 
