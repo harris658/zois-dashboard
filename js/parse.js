@@ -304,6 +304,14 @@ function launch() {
     )
   );
 
+  // Remove non-standard size keys from surviving products
+  const _stdSet = new Set(sizeCols.map(s => s.toLowerCase()));
+  products.forEach(p => {
+    Object.keys(p.sizes).forEach(k => {
+      if (!_stdSet.has(k.toLowerCase())) delete p.sizes[k];
+    });
+  });
+
   const _isLong2=document.getElementById('fmt-long').checked;
   localStorage.setItem(SETTINGS_KEY, JSON.stringify({...(loadSettings()||{}), store:{
     code: document.getElementById('map-code').value,
