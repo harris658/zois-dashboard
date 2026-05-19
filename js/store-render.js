@@ -53,6 +53,25 @@ function getImg(code) {
     || null;
 }
 
+// ── Sort ──────────────────────────────────────────────────────────────────
+function sortProducts(list) {
+  if (!window._storeSort) return list;
+  const { field, dir } = window._storeSort;
+  return [...list].sort((a, b) => {
+    if (field === 'code') {
+      const va = a.code.toLowerCase(), vb = b.code.toLowerCase();
+      return dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+    }
+    const va = field === 'units'
+      ? Object.values(a.sizes).reduce((s, q) => s + q, 0)
+      : (parseFloat(a.price) || 0);
+    const vb = field === 'units'
+      ? Object.values(b.sizes).reduce((s, q) => s + q, 0)
+      : (parseFloat(b.price) || 0);
+    return dir === 'asc' ? va - vb : vb - va;
+  });
+}
+
 // ── Render ────────────────────────────────────────────────────────────────
 const PH_SVG = '<svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="28" width="40" height="14" rx="4" fill="#6B3A1F"/><ellipse cx="17" cy="42" rx="4" ry="4" fill="#6B3A1F"/><ellipse cx="39" cy="42" rx="4" ry="4" fill="#6B3A1F"/><path d="M8 32 C14 20 28 16 44 24" stroke="#6B3A1F" stroke-width="3" fill="none" stroke-linecap="round"/></svg>';
 
@@ -106,6 +125,7 @@ function renderHomeDashboard() {
 function renderPrompt() { renderHomeDashboard(); }
 
 function renderGrid(list, activeSz) {
+  list = sortProducts(list);
   const grid = document.getElementById('pgrid');
   if (!list.length) {
     grid.innerHTML =

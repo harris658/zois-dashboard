@@ -80,3 +80,13 @@ def test_online_sort_button_in_html():
     assert 'id="os-btn-sort"' in html
     assert 'id="os-sort-panel"' in html
     assert 'id="os-sort-dot"' in html
+
+def test_sort_products_fn_in_store_render():
+    src = (ROOT / "js" / "store-render.js").read_text()
+    assert "function sortProducts" in src
+
+def test_store_sort_options_defined():
+    src = (ROOT / "js" / "store-filters.js").read_text()
+    assert "STORE_SORT_OPTIONS" in src
+    assert "toggleSortPanel" in src
+    assert "selectSort" in src

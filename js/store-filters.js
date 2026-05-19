@@ -1,3 +1,48 @@
+window._storeSort = null;
+
+const STORE_SORT_OPTIONS = [
+  { field: 'units', dir: 'desc', label: 'Units — High to Low' },
+  { field: 'units', dir: 'asc',  label: 'Units — Low to High' },
+  { field: 'price', dir: 'desc', label: 'Price — High to Low' },
+  { field: 'price', dir: 'asc',  label: 'Price — Low to High' },
+  { field: 'code',  dir: 'asc',  label: 'Code — A to Z' },
+];
+
+function toggleSortPanel() {
+  const panel = document.getElementById('sort-panel');
+  if (panel.style.display !== 'none') { panel.style.display = 'none'; return; }
+  panel.innerHTML = STORE_SORT_OPTIONS.map(opt => {
+    const active = window._storeSort &&
+      window._storeSort.field === opt.field &&
+      window._storeSort.dir   === opt.dir;
+    return '<button class="sort-option' + (active ? ' active' : '') + '" ' +
+      'onclick="selectSort(\'' + opt.field + '\',\'' + opt.dir + '\')">' +
+      opt.label + '</button>';
+  }).join('');
+  panel.style.display = 'block';
+}
+
+function selectSort(field, dir) {
+  const isActive = window._storeSort &&
+    window._storeSort.field === field &&
+    window._storeSort.dir   === dir;
+  window._storeSort = isActive ? null : { field, dir };
+  document.getElementById('sort-panel').style.display = 'none';
+  document.getElementById('btn-sort').classList.toggle('active', !!window._storeSort);
+  applyFilters();
+}
+
+document.addEventListener('click', e => {
+  if (!document.getElementById('btn-sort')?.closest('.sort-wrap')?.contains(e.target)) {
+    const p = document.getElementById('sort-panel');
+    if (p) p.style.display = 'none';
+  }
+  if (!document.getElementById('os-btn-sort')?.closest('.sort-wrap')?.contains(e.target)) {
+    const p = document.getElementById('os-sort-panel');
+    if (p) p.style.display = 'none';
+  }
+});
+
 // ── Filters ───────────────────────────────────────────────────────────────
 function buildFilters() {
   // Reset all conditionally-hidden filter rows to visible before rebuilding
@@ -72,7 +117,10 @@ function clearFilters() {
   document.getElementById('f-cat').value = '';
   document.getElementById('f-size').value = '';
   window._storePriceRange = null;
+  window._storeSort = null;
   ['f-color','f-cat','f-size'].forEach(id => updateSelectStyle(id));
+  document.getElementById('btn-sort').classList.remove('active');
+  document.getElementById('sort-panel').style.display = 'none';
   renderPrompt();
   document.getElementById('btn-clear').style.display = 'none';
   document.getElementById('back-overview').style.display = 'none';
@@ -90,17 +138,18 @@ function applyFilters() {
   ['f-color','f-cat','f-size'].forEach(id => updateSelectStyle(id));
 
   const hasFilters = q || cat || sz || col || priceRange;
-  document.getElementById('btn-clear').style.display = hasFilters ? '' : 'none';
-  document.getElementById('back-overview').style.display = hasFilters ? '' : 'none';
+  const hasSort    = !!window._storeSort;
+  document.getElementById('btn-clear').style.display = (hasFilters || hasSort) ? '' : 'none';
+  document.getElementById('back-overview').style.display = (hasFilters || hasSort) ? '' : 'none';
 
-  if (!hasFilters) {
+  if (!hasFilters && !hasSort) {
     renderPrompt();
     document.getElementById('f-count').textContent = '';
     document.getElementById('stat-shown').style.display = 'none';
     return;
   }
 
-  const out = products.filter(p => {
+  const out = hasFilters ? products.filter(p => {
     if (q && !(p.code + ' ' + p.name + ' ' + p.color).toLowerCase().includes(q)) return false;
     if (col && p.color !== col) return false;
     if (cat && p.category !== cat) return false;
@@ -110,7 +159,7 @@ function applyFilters() {
       if (isNaN(price) || price < priceRange.min || price >= priceRange.max) return false;
     }
     return true;
-  });
+  }) : products;
 
   document.getElementById('stat-shown').style.display = '';
   document.getElementById('s-shown').textContent = out.length;
