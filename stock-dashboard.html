@@ -431,6 +431,14 @@
         </button>
         <button class="pf-btn-clear" onclick="clearCachedFile('store')">Clear</button>
       </div>
+      <div class="pf-sub-card">
+        <h4 class="pf-sub-label">Store Images</h4>
+        <div id="pf-imgs-store-status"><div class="pf-empty">No folder linked</div></div>
+        <div class="pf-actions">
+          <button class="pf-btn-link" id="pf-imgs-store-link-btn" onclick="linkImgFolder('store')">Link folder on disk</button>
+          <button class="pf-btn-clear" id="pf-imgs-store-clear-btn" onclick="clearImgFolder('store')" style="display:none">Clear</button>
+        </div>
+      </div>
     </div>
 
     <div class="profile-card">
@@ -444,23 +452,13 @@
         </button>
         <button class="pf-btn-clear" onclick="clearCachedFile('online')">Clear</button>
       </div>
-    </div>
-
-    <div class="profile-card">
-      <h3>Store Images</h3>
-      <div id="pf-imgs-store-status"><div class="pf-empty">No folder linked</div></div>
-      <div class="pf-actions">
-        <button class="pf-btn-link" id="pf-imgs-store-link-btn" onclick="linkImgFolder('store')">Link folder on disk</button>
-        <button class="pf-btn-clear" id="pf-imgs-store-clear-btn" onclick="clearImgFolder('store')" style="display:none">Clear</button>
-      </div>
-    </div>
-
-    <div class="profile-card">
-      <h3>Online Images</h3>
-      <div id="pf-imgs-online-status"><div class="pf-empty">No folder linked</div></div>
-      <div class="pf-actions">
-        <button class="pf-btn-link" id="pf-imgs-online-link-btn" onclick="linkImgFolder('online')">Link folder on disk</button>
-        <button class="pf-btn-clear" id="pf-imgs-online-clear-btn" onclick="clearImgFolder('online')" style="display:none">Clear</button>
+      <div class="pf-sub-card">
+        <h4 class="pf-sub-label">Online Images</h4>
+        <div id="pf-imgs-online-status"><div class="pf-empty">No folder linked</div></div>
+        <div class="pf-actions">
+          <button class="pf-btn-link" id="pf-imgs-online-link-btn" onclick="linkImgFolder('online')">Link folder on disk</button>
+          <button class="pf-btn-clear" id="pf-imgs-online-clear-btn" onclick="clearImgFolder('online')" style="display:none">Clear</button>
+        </div>
       </div>
     </div>
   </div>

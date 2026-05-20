@@ -121,6 +121,22 @@
 }
 .pf-btn-link:hover { background: var(--br-tint); border-color: var(--tan); }
 
+/* Sub-card (images nested inside stock card) */
+.pf-sub-card {
+  margin-top: 18px;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+
+.pf-sub-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mid);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  margin-bottom: 12px;
+}
+
 /* Badges */
 .pf-linked-badge {
   display: inline-flex;
