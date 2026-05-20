@@ -9,13 +9,44 @@
 @media (max-width: 640px) {
   .global-hdr {
     padding: 0 12px;
-    gap: 8px;
-    height: 48px;
+    gap: 0;
+    height: auto;
+    flex-wrap: wrap;
+    align-items: center;
   }
 
-  .wordmark { font-size: 16px; }
+  /* Row 1: logo on left, icons on right */
+  .wordmark {
+    font-size: 16px;
+    padding: 10px 0;
+    flex: 1;
+  }
 
-  .hdr-actions { gap: 6px; }
+  .hdr-actions {
+    gap: 6px;
+    padding: 6px 0;
+  }
+
+  /* Row 2: tab pills full-width centered */
+  .pill-switch {
+    order: 99;
+    flex-basis: 100%;
+    margin: 0 -12px;
+    padding: 6px 12px;
+    border-left: none;
+    border-right: none;
+    border-top: 1px solid var(--border);
+    border-bottom: none;
+    border-radius: 0;
+    background: var(--white);
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .pill-btn {
+    padding: 6px 20px;
+    font-size: 12.5px;
+  }
 
   /* Hide "Sync" label text — keep icon only */
   .sync-label { display: none; }
@@ -33,17 +64,6 @@
   }
 }
 
-@media (max-width: 480px) {
-  .pill-switch {
-    flex-shrink: 1;
-    min-width: 0;
-  }
-
-  .pill-btn {
-    padding: 5px 9px;
-    font-size: 11px;
-  }
-}
 
 /* ── Filter bar — horizontal scroll on mobile ────────────────── */
 @media (max-width: 640px) {
