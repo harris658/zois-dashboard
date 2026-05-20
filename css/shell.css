@@ -39,12 +39,6 @@ body {
   user-select: none;
 }
 
-.header-logo {
-  height: 30px;
-  width: auto;
-  display: block;
-}
-
 .hdr-actions {
   margin-left: auto;
   display: flex;
