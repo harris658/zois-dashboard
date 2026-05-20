@@ -9,44 +9,13 @@
 @media (max-width: 640px) {
   .global-hdr {
     padding: 0 12px;
-    gap: 0;
-    height: auto;
-    flex-wrap: wrap;
-    align-items: center;
+    gap: 8px;
+    height: 48px;
   }
 
-  /* Row 1: logo on left, icons on right */
-  .wordmark {
-    font-size: 16px;
-    padding: 10px 0;
-    flex: 1;
-  }
+  .wordmark { font-size: 16px; }
 
-  .hdr-actions {
-    gap: 6px;
-    padding: 6px 0;
-  }
-
-  /* Row 2: tab pills full-width centered */
-  .pill-switch {
-    order: 99;
-    flex-basis: 100%;
-    margin: 0 -12px;
-    padding: 6px 12px;
-    border-left: none;
-    border-right: none;
-    border-top: 1px solid var(--border);
-    border-bottom: none;
-    border-radius: 0;
-    background: var(--white);
-    justify-content: center;
-    gap: 6px;
-  }
-
-  .pill-btn {
-    padding: 6px 20px;
-    font-size: 12.5px;
-  }
+  .hdr-actions { gap: 6px; }
 
   /* Hide "Sync" label text — keep icon only */
   .sync-label { display: none; }
