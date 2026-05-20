@@ -15,7 +15,12 @@
 
   .wordmark { font-size: 16px; }
 
-  .hdr-actions { gap: 6px; }
+  .hdr-actions { gap: 4px; }
+
+  .profile-btn,
+  .settings-btn { width: 30px; height: 30px; }
+
+  .pill-btn { padding: 5px 10px; font-size: 12px; }
 
   /* Hide "Sync" label text — keep icon only */
   .sync-label { display: none; }
