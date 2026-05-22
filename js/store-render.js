@@ -39,7 +39,8 @@ async function copyProductImage(code, idx = 0, imgs) {
     await navigator.clipboard.write([new ClipboardItem({ 'image/png': blobPromise })]);
     showToast('Image copied ✓ — paste in WhatsApp');
   } catch(e) {
-    showToast('No image to copy');
+    console.error('copyProductImage failed:', e);
+    showToast('Copy failed: ' + (e && e.message ? e.message : String(e)));
   }
 }
 
