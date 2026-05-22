@@ -56,6 +56,9 @@ sw_script = (
     "\n<script>"
     "\nif ('serviceWorker' in navigator) {"
     "\n  navigator.serviceWorker.register('./sw.js');"
+    "\n  navigator.serviceWorker.addEventListener('message', function(e) {"
+    "\n    if (e.data && e.data.type === 'SW_UPDATED') location.reload();"
+    "\n  });"
     "\n}"
     "\n</script>"
 )
