@@ -85,8 +85,7 @@ function modalShareProduct() {
 
 function modalCopyImage() {
   if (!currentModalProduct) return;
-  const code = currentModalType === 'store' ? currentModalProduct.code : currentModalProduct.baseCode;
-  copyProductImage(code, carouselIdx);
+  copyProductImage(null, carouselIdx, carouselImgs);
 }
 function overlayClick(e) { if (e.target === document.getElementById('overlay')) closeModal(); }
 document.addEventListener('keydown', e => {
