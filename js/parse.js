@@ -393,11 +393,21 @@ function saveNetImgUrl() {
 }
 
 async function tryRestoreNetworkImages() {
+  // Auto-detect: if served over HTTP from a local IP, use current origin as image server
+  const isLocalServer = location.protocol === 'http:' &&
+    !['localhost', '127.0.0.1'].includes(location.hostname);
+  if (isLocalServer) {
+    const base = location.origin;
+    localStorage.setItem(NET_IMG_KEY, base);
+    const input = document.getElementById('inp-net-img-url');
+    if (input) input.value = base;
+    if (!Object.keys(imgMap).length) await loadImagesFromNetworkUrl(base);
+    return;
+  }
+
   const url = localStorage.getItem(NET_IMG_KEY);
   if (!url) return;
   const input = document.getElementById('inp-net-img-url');
   if (input) input.value = url;
-  if (!Object.keys(imgMap).length) {
-    await loadImagesFromNetworkUrl(url);
-  }
+  if (!Object.keys(imgMap).length) await loadImagesFromNetworkUrl(url);
 }
