@@ -193,6 +193,11 @@
             <div class="uz-sub">Select the folder containing your product photos</div>
           </div>
           <div class="uz-status info" id="st-imgs">No folder selected — placeholders will be shown</div>
+          <div style="margin-top:6px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+            <input type="text" id="inp-net-img-url" placeholder="Or: network server URL (http://192.168.x.x:8080)"
+              style="flex:1;min-width:160px;font-size:11px;padding:5px 8px;border:1px solid var(--border,#ccc);border-radius:6px;background:var(--bg2,transparent);color:inherit;outline:none;">
+            <button onclick="saveNetImgUrl()" style="font-size:11px;padding:5px 10px;border:1px solid #888;border-radius:6px;background:transparent;color:inherit;cursor:pointer;white-space:nowrap;">Connect</button>
+          </div>
         </div>
       </div>
 

@@ -293,6 +293,9 @@ async function initFromCache() {
       }
     } catch(e) { /* images are optional */ }
   }
+
+  // ── Network image server (auto-connects if no local folder loaded) ──────
+  await tryRestoreNetworkImages();
 }
 
 async function reloadImgsFromHandle(which) {

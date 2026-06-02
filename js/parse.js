@@ -339,3 +339,61 @@ function launch() {
   document.getElementById('s-total').textContent = products.length;
   computeDiff();
 }
+
+// ── Network image server ───────────────────────────────────────────────────
+const NET_IMG_KEY = 'zois-img-server-url';
+
+async function loadImagesFromNetworkUrl(baseUrl) {
+  const base = baseUrl.replace(/\/$/, '');
+  try {
+    const res = await fetch(base + '/manifest.json');
+    if (!res.ok) throw new Error('server not reachable — is start-image-server.bat running?');
+    const files = await res.json();
+    imgMap = {};
+    let n = 0;
+    for (const name of files) {
+      if (!/\.(jpe?g|png|webp|gif|avif)$/i.test(name)) continue;
+      const url = base + '/' + encodeURIComponent(name);
+      const raw = name.replace(/\.[^/.]+$/, '').toLowerCase().trim();
+      const key = raw.replace(/[\s\-_]+\d+$/, '').trim() || raw;
+      (imgMap[key] = imgMap[key] || []).push(url);
+      const prefix = key.replace(/-rs\d+$/i, '');
+      if (prefix !== key) (imgMap[prefix] = imgMap[prefix] || []).push(url);
+      n++;
+    }
+    const stEl = document.getElementById('st-imgs');
+    if (stEl) { stEl.textContent = '✓ ' + n + ' images linked (network)'; stEl.className = 'uz-status ok'; }
+    const zoneEl = document.getElementById('zone-imgs');
+    if (zoneEl) zoneEl.classList.add('done');
+    // Re-render grid if dashboard is already open
+    const gridEl = document.getElementById('store-grid');
+    if (gridEl && gridEl.style.display !== 'none' && typeof applyFilters === 'function') applyFilters();
+    return n;
+  } catch(e) {
+    const stEl = document.getElementById('st-imgs');
+    if (stEl) { stEl.textContent = 'Network error: ' + e.message; stEl.className = 'uz-status err'; }
+    return 0;
+  }
+}
+
+function saveNetImgUrl() {
+  const url = (document.getElementById('inp-net-img-url') || {}).value.trim();
+  if (!url) {
+    localStorage.removeItem(NET_IMG_KEY);
+    showToast('Network server URL cleared');
+    return;
+  }
+  localStorage.setItem(NET_IMG_KEY, url);
+  showToast('Connecting to image server…');
+  loadImagesFromNetworkUrl(url);
+}
+
+async function tryRestoreNetworkImages() {
+  const url = localStorage.getItem(NET_IMG_KEY);
+  if (!url) return;
+  const input = document.getElementById('inp-net-img-url');
+  if (input) input.value = url;
+  if (!Object.keys(imgMap).length) {
+    await loadImagesFromNetworkUrl(url);
+  }
+}
