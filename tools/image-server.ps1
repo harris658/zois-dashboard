@@ -1,6 +1,6 @@
 param(
   [Parameter(Mandatory=$true)][string]$Folder,
-  [int]$Port = 8080
+  [int]$Port = 9191
 )
 
 # Validate folder
@@ -28,51 +28,63 @@ $images = Get-ChildItem $Folder -File |
   Where-Object { $imageExts -contains $_.Extension.ToLower() } |
   Select-Object -ExpandProperty Name
 
+# Force array so ConvertTo-Json always outputs [...] even for 0 or 1 items
 $manifestPath = Join-Path $Folder "manifest.json"
-$images | ConvertTo-Json -Compress | Set-Content $manifestPath -Encoding UTF8
+@($images) | ConvertTo-Json -Compress | Set-Content $manifestPath -Encoding ASCII
 
-Write-Host "  $($images.Count) images indexed"
+Write-Host "  $(@($images).Count) images indexed"
 Write-Host ""
 
-# ── Step 2: Get local IP ──────────────────────────────────────────────────────
+# ── Step 2: Get local IP (prefer Ethernet) ────────────────────────────────────
 $ip = (Get-NetIPAddress -AddressFamily IPv4 |
   Where-Object { $_.IPAddress -ne '127.0.0.1' -and $_.PrefixOrigin -ne 'WellKnown' } |
+  Sort-Object { if ($_.InterfaceAlias -match 'Ethernet|Local') { 0 } else { 1 } } |
   Select-Object -First 1).IPAddress
 
 if (-not $ip) { $ip = "localhost" }
 
-# ── Step 3: Register URL with Windows (needed for network access) ─────────────
+# ── Step 3: Open firewall port ────────────────────────────────────────────────
 try {
+  netsh advfirewall firewall delete rule name="ZOIS Image Server" 2>&1 | Out-Null
+  netsh advfirewall firewall add rule name="ZOIS Image Server" dir=in action=allow protocol=TCP localport=$Port 2>&1 | Out-Null
+  Write-Host "  Firewall rule added for port $Port"
+} catch {}
+
+# ── Step 4: Register URL with Windows HTTP API ────────────────────────────────
+try {
+  netsh http delete urlacl url="http://+:$Port/" 2>&1 | Out-Null
   netsh http add urlacl url="http://+:$Port/" user=Everyone 2>&1 | Out-Null
 } catch {}
 
-# ── Step 4: Start HTTP listener ───────────────────────────────────────────────
+# ── Step 5: Start HTTP listener ───────────────────────────────────────────────
 $listener = New-Object System.Net.HttpListener
 $listener.Prefixes.Add("http://+:$Port/")
 
 try {
   $listener.Start()
 } catch {
-  Write-Host "ERROR: Could not start server."
-  Write-Host "Make sure you ran start-image-server.bat as Administrator."
+  Write-Host ""
+  Write-Host "ERROR: Could not start server on port $Port."
+  Write-Host "Try editing start-image-server.bat and changing PORT to a different number (e.g. 7777)."
   Write-Host ""
   Read-Host "Press Enter to exit"
   exit 1
 }
 
+Write-Host ""
 Write-Host "====================================================="
 Write-Host "  ZOIS Image Server is running!"
 Write-Host ""
 Write-Host "  Enter this URL in the ZOIS Dashboard:"
 Write-Host "  http://$($ip):$Port"
 Write-Host ""
-Write-Host "  (Both devices must be on the same WiFi)"
+Write-Host "  (Phone must be on same WiFi as this router)"
 Write-Host "====================================================="
 Write-Host ""
 Write-Host "Press Ctrl+C to stop the server."
 Write-Host ""
 
-# ── Step 5: Serve requests ────────────────────────────────────────────────────
+# ── Step 6: Serve requests ────────────────────────────────────────────────────
 while ($listener.IsListening) {
   try {
     $ctx = $listener.GetContext()

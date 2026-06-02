@@ -24,5 +24,5 @@ if %errorLevel% neq 0 (
 )
 
 :: Launch the PowerShell server script
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0image-server.ps1" -Folder "%IMAGES_FOLDER%"
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0image-server.ps1" -Folder "%IMAGES_FOLDER%" -Port 9191
 pause
