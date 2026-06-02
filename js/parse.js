@@ -347,8 +347,11 @@ async function loadImagesFromNetworkUrl(baseUrl) {
   const base = baseUrl.replace(/\/$/, '');
   try {
     const res = await fetch(base + '/manifest.json');
-    if (!res.ok) throw new Error('server not reachable — is start-image-server.bat running?');
-    const files = await res.json();
+    if (!res.ok) throw new Error('server not reachable (status ' + res.status + ') — is start-image-server.bat running?');
+    let files;
+    try { files = await res.json(); } catch(jsonErr) {
+      throw new Error('manifest.json not found — run start-image-server.bat on the PC first');
+    }
     imgMap = {};
     let n = 0;
     for (const name of files) {
