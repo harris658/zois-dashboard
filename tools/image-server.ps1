@@ -18,7 +18,7 @@ if (-not (Test-Path $Folder)) {
 $Folder = (Resolve-Path $Folder).Path
 $imageExts = @('.jpg', '.jpeg', '.png', '.webp', '.gif', '.avif')
 
-# ── Step 1: Generate manifest.json (scans all subfolders) ─────────────────────
+# Step 1: Generate manifest.json
 Write-Host ""
 Write-Host "Scanning images in:"
 Write-Host "  $Folder"
@@ -43,19 +43,18 @@ if ($images.Count -eq 0) {
 }
 Write-Host ""
 
-# ── Step 2: Download dashboard from GitHub Pages ──────────────────────────────
+# Step 2: Download dashboard from GitHub Pages
 Write-Host "Downloading latest dashboard..."
 $dashboardHtml = $null
 try {
   $dashboardHtml = (Invoke-WebRequest -Uri "https://harris658.github.io/zois-dashboard/" -UseBasicParsing -TimeoutSec 15).Content
   Write-Host "  Dashboard ready"
 } catch {
-  Write-Host "  Could not download dashboard (no internet?)"
-  Write-Host "  Images will still be served — open the dashboard from GitHub on your phone"
+  Write-Host "  Could not download dashboard (check internet connection)"
 }
 Write-Host ""
 
-# ── Step 3: Get local IP (prefer Ethernet) ────────────────────────────────────
+# Step 3: Get local IP
 $ip = (Get-NetIPAddress -AddressFamily IPv4 |
   Where-Object { $_.IPAddress -ne '127.0.0.1' -and $_.PrefixOrigin -ne 'WellKnown' } |
   Sort-Object { if ($_.InterfaceAlias -match 'Ethernet|Local') { 0 } else { 1 } } |
@@ -63,25 +62,26 @@ $ip = (Get-NetIPAddress -AddressFamily IPv4 |
 
 if (-not $ip) { $ip = "localhost" }
 
-# ── Step 4: Open firewall port ────────────────────────────────────────────────
+# Step 4: Open firewall port
 try {
   netsh advfirewall firewall delete rule name="ZOIS Image Server" 2>&1 | Out-Null
   netsh advfirewall firewall add rule name="ZOIS Image Server" dir=in action=allow protocol=TCP localport=$Port 2>&1 | Out-Null
 } catch {}
 
-# ── Step 5: Register URL with Windows HTTP API ────────────────────────────────
+# Step 5: Register URL with Windows HTTP API
 try {
   netsh http delete urlacl url="http://+:$Port/" 2>&1 | Out-Null
   netsh http add urlacl url="http://+:$Port/" user=Everyone 2>&1 | Out-Null
 } catch {}
 
-# ── Step 6: Start HTTP listener ───────────────────────────────────────────────
+# Step 6: Start HTTP listener
 $listener = New-Object System.Net.HttpListener
 $listener.Prefixes.Add("http://+:$Port/")
 
 try {
   $listener.Start()
 } catch {
+  Write-Host ""
   Write-Host "ERROR: Could not start server on port $Port."
   Write-Host "Try changing -Port 9191 to -Port 7777 in start-image-server.bat"
   Write-Host ""
@@ -93,22 +93,22 @@ Write-Host "====================================================="
 Write-Host "  ZOIS Image Server is running!"
 Write-Host ""
 if ($dashboardHtml) {
-  Write-Host "  Open this on your phone's browser:"
+  Write-Host "  Open this URL on your phone browser:"
   Write-Host "  http://$($ip):$Port"
   Write-Host ""
   Write-Host "  Dashboard + images load automatically."
 } else {
-  Write-Host "  Image server URL: http://$($ip):$Port"
-  Write-Host "  (Dashboard download failed — use GitHub link on phone)"
+  Write-Host "  Image server: http://$($ip):$Port"
+  Write-Host "  Dashboard download failed - open GitHub link on phone instead."
 }
 Write-Host ""
-Write-Host "  (Phone must be on same WiFi/network as this PC)"
+Write-Host "  Phone must be on same WiFi/network as this PC."
 Write-Host "====================================================="
 Write-Host ""
 Write-Host "Press Ctrl+C to stop the server."
 Write-Host ""
 
-# ── Step 7: Serve requests ────────────────────────────────────────────────────
+# Step 7: Serve requests
 while ($listener.IsListening) {
   try {
     $ctx = $listener.GetContext()
@@ -134,8 +134,8 @@ while ($listener.IsListening) {
         $res.ContentLength64 = $bytes.Length
         $res.OutputStream.Write($bytes, 0, $bytes.Length)
       } else {
-        $msg = '<html><body style="font-family:sans-serif;padding:40px"><h2>ZOIS Image Server</h2><p>Images are being served but the dashboard could not be downloaded (no internet at startup).</p><p>Open the dashboard from your phone browser: <a href="https://harris658.github.io/zois-dashboard/">harris658.github.io/zois-dashboard</a></p></body></html>'
-        $bytes = [Text.Encoding]::UTF8.GetBytes($msg)
+        $fallback = "<html><body><h2>ZOIS Image Server</h2><p>Dashboard could not be downloaded. Open the dashboard from your phone: harris658.github.io/zois-dashboard</p></body></html>"
+        $bytes = [Text.Encoding]::UTF8.GetBytes($fallback)
         $res.ContentType = "text/html"
         $res.ContentLength64 = $bytes.Length
         $res.OutputStream.Write($bytes, 0, $bytes.Length)
