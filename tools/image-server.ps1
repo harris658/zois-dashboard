@@ -18,21 +18,34 @@ if (-not (Test-Path $Folder)) {
 $Folder = (Resolve-Path $Folder).Path
 $imageExts = @('.jpg', '.jpeg', '.png', '.webp', '.gif', '.avif')
 
-# ── Step 1: Generate manifest.json ───────────────────────────────────────────
+# ── Step 1: Generate manifest.json (scans all subfolders) ─────────────────────
 Write-Host ""
 Write-Host "Scanning images in:"
 Write-Host "  $Folder"
 Write-Host ""
 
-$images = Get-ChildItem $Folder -File |
+# Recurse into all subfolders, store relative paths (using forward slashes for URLs)
+$images = Get-ChildItem $Folder -File -Recurse |
   Where-Object { $imageExts -contains $_.Extension.ToLower() } |
-  Select-Object -ExpandProperty Name
+  ForEach-Object { $_.FullName.Substring($Folder.Length).TrimStart('\', '/').Replace('\', '/') }
 
-# Force array so ConvertTo-Json always outputs [...] even for 0 or 1 items
 $manifestPath = Join-Path $Folder "manifest.json"
-@($images) | ConvertTo-Json -Compress | Set-Content $manifestPath -Encoding ASCII
 
-Write-Host "  $(@($images).Count) images indexed"
+# Always write a valid JSON array (even if empty)
+if ($images.Count -eq 0) {
+  Set-Content $manifestPath '[]' -Encoding ASCII
+} else {
+  # Force array wrapper so single-item result stays [...] not just "string"
+  $json = '[' + (($images | ForEach-Object { '"' + $_.Replace('"','\"') + '"' }) -join ',') + ']'
+  Set-Content $manifestPath $json -Encoding ASCII
+}
+
+Write-Host "  $($images.Count) images indexed"
+if ($images.Count -eq 0) {
+  Write-Host ""
+  Write-Host "  WARNING: No images found in this folder."
+  Write-Host "  Make sure DEFAULT_FOLDER in start-image-server.bat points to your images folder."
+}
 Write-Host ""
 
 # ── Step 2: Get local IP (prefer Ethernet) ────────────────────────────────────
@@ -47,7 +60,6 @@ if (-not $ip) { $ip = "localhost" }
 try {
   netsh advfirewall firewall delete rule name="ZOIS Image Server" 2>&1 | Out-Null
   netsh advfirewall firewall add rule name="ZOIS Image Server" dir=in action=allow protocol=TCP localport=$Port 2>&1 | Out-Null
-  Write-Host "  Firewall rule added for port $Port"
 } catch {}
 
 # ── Step 4: Register URL with Windows HTTP API ────────────────────────────────
@@ -65,20 +77,19 @@ try {
 } catch {
   Write-Host ""
   Write-Host "ERROR: Could not start server on port $Port."
-  Write-Host "Try editing start-image-server.bat and changing PORT to a different number (e.g. 7777)."
+  Write-Host "Try editing start-image-server.bat and changing -Port 9191 to -Port 7777"
   Write-Host ""
   Read-Host "Press Enter to exit"
   exit 1
 }
 
-Write-Host ""
 Write-Host "====================================================="
 Write-Host "  ZOIS Image Server is running!"
 Write-Host ""
 Write-Host "  Enter this URL in the ZOIS Dashboard:"
 Write-Host "  http://$($ip):$Port"
 Write-Host ""
-Write-Host "  (Phone must be on same WiFi as this router)"
+Write-Host "  (Phone must be on same WiFi/network as this PC)"
 Write-Host "====================================================="
 Write-Host ""
 Write-Host "Press Ctrl+C to stop the server."
@@ -105,7 +116,8 @@ while ($listener.IsListening) {
 
     # Security: don't serve files outside the images folder
     $resolvedPath = try { (Resolve-Path $filePath -ErrorAction Stop).Path } catch { $null }
-    if ($resolvedPath -and $resolvedPath.StartsWith($Folder)) {
+    $folderWithSlash = $Folder.TrimEnd('\') + '\'
+    if ($resolvedPath -and $resolvedPath.StartsWith($folderWithSlash)) {
       if (Test-Path $resolvedPath -PathType Leaf) {
         $bytes = [IO.File]::ReadAllBytes($resolvedPath)
         $res.ContentLength64 = $bytes.Length

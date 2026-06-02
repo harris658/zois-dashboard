@@ -354,9 +354,10 @@ async function loadImagesFromNetworkUrl(baseUrl) {
     }
     imgMap = {};
     let n = 0;
-    for (const name of files) {
+    for (const relPath of files) {
+      const name = relPath.split('/').pop();
       if (!/\.(jpe?g|png|webp|gif|avif)$/i.test(name)) continue;
-      const url = base + '/' + encodeURIComponent(name);
+      const url = base + '/' + relPath.split('/').map(encodeURIComponent).join('/');
       const raw = name.replace(/\.[^/.]+$/, '').toLowerCase().trim();
       const key = raw.replace(/[\s\-_]+\d+$/, '').trim() || raw;
       (imgMap[key] = imgMap[key] || []).push(url);
