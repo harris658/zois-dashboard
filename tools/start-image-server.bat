@@ -32,37 +32,16 @@ if %errorLevel% neq 0 (
   exit /b
 )
 
-:: Download the latest server script from GitHub
-echo Downloading latest server script...
-set PS1_DEST=%TEMP%\zois-image-server.ps1
-set PS1_URL=https://raw.githubusercontent.com/harris658/zois-dashboard/main/tools/image-server.ps1
-
-:: Try WebClient with TLS 1.2 first
-powershell -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; (New-Object System.Net.WebClient).DownloadFile('%PS1_URL%', '%PS1_DEST%')"
-
-:: If file still missing, try Invoke-WebRequest
-if not exist "%PS1_DEST%" (
-  powershell -NoProfile -Command "Invoke-WebRequest -Uri '%PS1_URL%' -OutFile '%PS1_DEST%' -UseBasicParsing"
-)
-
-:: If still missing, try local copy
-if not exist "%PS1_DEST%" (
-  echo WARNING: Download failed. Trying local copy...
-  copy "%~dp0image-server.ps1" "%PS1_DEST%" >nul 2>&1
-)
-
-:: If nothing worked, bail with a clear message
-if not exist "%PS1_DEST%" (
+:: Run the server script from the same folder as this .bat
+set PS1_PATH=%~dp0image-server.ps1
+if not exist "%PS1_PATH%" (
   echo.
-  echo ERROR: Could not download image-server.ps1.
-  echo Download it manually from:
-  echo   https://github.com/harris658/zois-dashboard/blob/main/tools/image-server.ps1
-  echo Place it in the same folder as this .bat file and try again.
+  echo ERROR: image-server.ps1 not found in the same folder as this .bat file.
+  echo Make sure both files are in the same folder.
   echo.
   pause
   exit /b 1
 )
 
-:: Run the server
-powershell -NoProfile -ExecutionPolicy Bypass -File "%PS1_DEST%" -StoreFolder "%STORE_FOLDER%" -OnlineFolder "%ONLINE_FOLDER%" -Port 9191
+powershell -NoProfile -ExecutionPolicy Bypass -File "%PS1_PATH%" -StoreFolder "%STORE_FOLDER%" -OnlineFolder "%ONLINE_FOLDER%" -Port 9191
 pause
