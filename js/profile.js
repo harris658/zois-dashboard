@@ -86,7 +86,7 @@ async function _loadOnlineFile(file) {
   osHeaders = Object.keys(data[0]).filter(k => !k.startsWith('_'));
   osRawData = data;
   const _d = new Date().toISOString();
-  await idbSave('online', { name: file.name, date: _d, buffer: buf });
+  if (!_changeDataMode) await idbSave('online', { name: file.name, date: _d, buffer: buf });
   const detected = detectOsCols(osHeaders);
   const _sv = loadSettings(); const _ov = (_sv&&_sv.online)||{};
   Object.entries(_ov).forEach(([fld,sv]) => { if(sv&&detected[fld]===undefined){const m=osHeaders.find(h=>h.toLowerCase()===sv.toLowerCase());if(m)detected[fld]=m;} });
@@ -368,6 +368,24 @@ async function syncFromDisk() {
   }
   if (storeH)  await reloadFromHandle('store');
   if (onlineH) await reloadFromHandle('online');
+}
+
+function enterOsChangeData() {
+  _changeDataMode = true;
+  if (osRawData && osRawData.length) {
+    const st = document.getElementById('os-st');
+    if (st) { st.textContent = '✓ ' + osRawData.length + ' rows loaded'; st.className = 'uz-status ok'; }
+    document.getElementById('os-zone').classList.add('done');
+    document.getElementById('os-launch').disabled = false;
+  }
+  const imgCount = Object.keys(osImgMap).length;
+  if (imgCount > 0) {
+    const el = document.getElementById('os-st-imgs');
+    if (el) { el.textContent = '✓ ' + imgCount + ' images linked'; el.className = 'uz-status ok'; }
+    document.getElementById('os-zone-imgs').classList.add('done');
+  }
+  document.getElementById('os-setup').style.display = '';
+  document.getElementById('os-grid-wrap').style.display = 'none';
 }
 
 initFromCache();

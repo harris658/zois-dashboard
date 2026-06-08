@@ -1,4 +1,5 @@
 // ── State ────────────────────────────────────────────────────────────────
+let _changeDataMode = false; // true when user enters setup via "Change data" — skips IDB saves
 let products = [];
 let allRows  = [];
 let imgMap   = {};

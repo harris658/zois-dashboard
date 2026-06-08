@@ -72,9 +72,9 @@ async function pickImageFolder(e) {
   e.stopPropagation();
   try {
     const handle = await window.showDirectoryPicker({ mode: 'read' });
-    await idbSave('imgs-store-handle', handle);
+    if (!_changeDataMode) await idbSave('imgs-store-handle', handle);
     await loadImagesFromHandle(handle, 'store');
-    showToast('Store image folder linked ✓ — auto-loads next time');
+    showToast(_changeDataMode ? 'Images loaded for this session' : 'Store image folder linked ✓ — auto-loads next time');
   } catch(err) {
     if (err.name !== 'AbortError') showToast('Error: ' + err.message);
   }
@@ -82,6 +82,16 @@ async function pickImageFolder(e) {
 
 if (btnLaunch) btnLaunch.addEventListener('click', launch);
 document.getElementById('btn-reload').addEventListener('click', () => {
+  _changeDataMode = true;
+  if (allRows && allRows.length) {
+    setStatus('st-data', 'ok', '✓ ' + allRows.length + ' rows loaded');
+    document.getElementById('zone-data').classList.add('done');
+  }
+  const imgCount = Object.keys(imgMap).length;
+  if (imgCount > 0) {
+    setStatus('st-imgs', 'ok', '✓ ' + imgCount + ' images linked');
+    document.getElementById('zone-imgs').classList.add('done');
+  }
   document.getElementById('store-grid').style.display = 'none';
   document.getElementById('store-setup').style.display = '';
   clearFilters();
@@ -141,8 +151,10 @@ async function parseFile(file) {
   if (!rows.length) throw new Error('No rows found in file');
   allRows = rows;
   const _isoNow = new Date().toISOString();
-  idbSave('store', { name: file.name, date: _isoNow, buffer: buf })
-    .then(() => renderProfileStatus('store', file.name, _isoNow));
+  if (!_changeDataMode) {
+    idbSave('store', { name: file.name, date: _isoNow, buffer: buf })
+      .then(() => renderProfileStatus('store', file.name, _isoNow));
+  }
   setStatus('st-data', 'ok', '✓ ' + rows.length + ' rows loaded — match columns below');
   showMapper(rows);
 }
