@@ -38,6 +38,10 @@ param(
   [int]$Port = 9191
 )
 
+if ($StoreFolder) { $StoreFolder = $StoreFolder.Trim() }
+if ($OnlineFolder) { $OnlineFolder = $OnlineFolder.Trim() }
+if ($Folder)       { $Folder       = $Folder.Trim() }
+
 if ($StoreFolder -eq "" -and $Folder -ne "") { $StoreFolder = $Folder }
 
 if ($StoreFolder -eq "") {
@@ -70,13 +74,10 @@ $storeImages = Get-ChildItem $StoreFolder -File -Recurse |
   Where-Object { $imageExts -contains $_.Extension.ToLower() } |
   ForEach-Object { $_.FullName.Substring($StoreFolder.Length).TrimStart('\', '/').Replace('\', '/') }
 
-$storeManifestPath = Join-Path $StoreFolder "manifest.json"
 if ($storeImages.Count -eq 0) {
-  Set-Content $storeManifestPath '[]' -Encoding ASCII
   $storeManifestJson = '[]'
 } else {
   $storeManifestJson = '[' + (($storeImages | ForEach-Object { '"' + $_.Replace('\','/').Replace('"','\"') + '"' }) -join ',') + ']'
-  Set-Content $storeManifestPath $storeManifestJson -Encoding ASCII
 }
 
 Write-Host "  $(@($storeImages).Count) store images indexed"
@@ -206,6 +207,15 @@ while ($listener.IsListening) {
         $res.ContentLength64 = $bytes.Length
         $res.OutputStream.Write($bytes, 0, $bytes.Length)
       }
+      $res.Close()
+      continue
+    }
+
+    if ($urlPath -eq 'manifest.json') {
+      $bytes = [Text.Encoding]::UTF8.GetBytes($storeManifestJson)
+      $res.ContentType = "application/json"
+      $res.ContentLength64 = $bytes.Length
+      $res.OutputStream.Write($bytes, 0, $bytes.Length)
       $res.Close()
       continue
     }
