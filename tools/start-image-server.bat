@@ -11,15 +11,27 @@ set DEFAULT_STORE_FOLDER=D:\Shoper9\Images
 set DEFAULT_ONLINE_FOLDER=
 :: ─────────────────────────────────────────────────────────────────────────────
 
+:: If elevated relaunch — restore paths from temp files (avoids space-in-path issues)
+if "%~1"=="--elevated" (
+  set /p STORE_FOLDER=<"%TEMP%\zois-store-path.txt"
+  set /p ONLINE_FOLDER=<"%TEMP%\zois-online-path.txt"
+  goto :run
+)
+
 if "%~1"=="" ( set STORE_FOLDER=%DEFAULT_STORE_FOLDER% ) else ( set STORE_FOLDER=%~1 )
 if "%~2"=="" ( set ONLINE_FOLDER=%DEFAULT_ONLINE_FOLDER% ) else ( set ONLINE_FOLDER=%~2 )
 
 net session >nul 2>&1
 if %errorLevel% neq 0 (
+  :: Write paths to temp files before elevating so spaces in paths survive
+  >"%TEMP%\zois-store-path.txt" echo(%STORE_FOLDER%
+  >"%TEMP%\zois-online-path.txt" echo(%ONLINE_FOLDER%
   echo Requesting administrator access...
-  powershell -Command "Start-Process '%~f0' -ArgumentList '%STORE_FOLDER%','%ONLINE_FOLDER%' -Verb RunAs"
+  powershell -Command "Start-Process '%~f0' -ArgumentList '--elevated' -Verb RunAs"
   exit /b
 )
+
+:run
 
 :: Pass paths via env vars to avoid quoting issues, then extract + run embedded PS
 set ZOIS_STORE=%STORE_FOLDER%
