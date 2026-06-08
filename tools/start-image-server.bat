@@ -28,7 +28,7 @@ if "%~2"=="" (
 net session >nul 2>&1
 if %errorLevel% neq 0 (
   echo Requesting administrator access...
-  powershell -Command "Start-Process '%~f0' -ArgumentList '`"%STORE_FOLDER%`"','`"%ONLINE_FOLDER%`"' -Verb RunAs"
+  powershell -Command "Start-Process '%~f0' -ArgumentList '%STORE_FOLDER%','%ONLINE_FOLDER%' -Verb RunAs"
   exit /b
 )
 
