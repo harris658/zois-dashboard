@@ -1,10 +1,21 @@
 param(
-  [Parameter(Mandatory=$true)][string]$StoreFolder,
+  [string]$StoreFolder = "",
+  [string]$Folder = "",      # backward compat — old .bat passes -Folder
   [string]$OnlineFolder = "",
   [int]$Port = 9191
 )
 
+if ($StoreFolder -eq "" -and $Folder -ne "") { $StoreFolder = $Folder }
+
 # ── Validate store folder ─────────────────────────────────────────────────────
+if ($StoreFolder -eq "") {
+  Write-Host ""
+  Write-Host "ERROR: No store folder specified."
+  Write-Host "Edit start-image-server.bat and set DEFAULT_STORE_FOLDER."
+  Write-Host ""
+  Read-Host "Press Enter to exit"
+  exit 1
+}
 if (-not (Test-Path $StoreFolder)) {
   Write-Host ""
   Write-Host "ERROR: Store folder not found: $StoreFolder"
