@@ -2,24 +2,33 @@
 title ZOIS Image Server
 
 :: ─────────────────────────────────────────────────────────────────────────────
-:: Set your images folder path below.
-:: You can also drag-and-drop your images folder onto this .bat file instead.
+:: Set your images folder paths below.
+:: You can also drag-and-drop folders onto this .bat file:
+::   - Drag ONE folder  → used as Store images
+::   - Drag TWO folders → first = Store, second = Online
 :: ─────────────────────────────────────────────────────────────────────────────
-set DEFAULT_FOLDER=D:\Shoper9\Images
+set DEFAULT_STORE_FOLDER=D:\Shoper9\Images
+set DEFAULT_ONLINE_FOLDER=
 :: ─────────────────────────────────────────────────────────────────────────────
 
-:: Use drag-dropped folder if provided, otherwise use default above
+:: Use drag-dropped folders if provided, otherwise use defaults above
 if "%~1"=="" (
-  set IMAGES_FOLDER=%DEFAULT_FOLDER%
+  set STORE_FOLDER=%DEFAULT_STORE_FOLDER%
 ) else (
-  set IMAGES_FOLDER=%~1
+  set STORE_FOLDER=%~1
+)
+
+if "%~2"=="" (
+  set ONLINE_FOLDER=%DEFAULT_ONLINE_FOLDER%
+) else (
+  set ONLINE_FOLDER=%~2
 )
 
 :: Request admin privileges
 net session >nul 2>&1
 if %errorLevel% neq 0 (
   echo Requesting administrator access...
-  powershell -Command "Start-Process '%~f0' -ArgumentList '%IMAGES_FOLDER%' -Verb RunAs"
+  powershell -Command "Start-Process '%~f0' -ArgumentList '`"%STORE_FOLDER%`"','`"%ONLINE_FOLDER%`"' -Verb RunAs"
   exit /b
 )
 
@@ -32,5 +41,5 @@ if %errorLevel% neq 0 (
 )
 
 :: Run the server
-powershell -NoProfile -ExecutionPolicy Bypass -File "%TEMP%\zois-image-server.ps1" -Folder "%IMAGES_FOLDER%" -Port 9191
+powershell -NoProfile -ExecutionPolicy Bypass -File "%TEMP%\zois-image-server.ps1" -StoreFolder "%STORE_FOLDER%" -OnlineFolder "%ONLINE_FOLDER%" -Port 9191
 pause

@@ -392,6 +392,40 @@ async function loadImagesFromNetworkUrl(baseUrl) {
   }
 }
 
+async function loadOnlineImagesFromNetworkUrl(baseUrl) {
+  const base = baseUrl.replace(/\/$/, '');
+  try {
+    const res = await fetch(base + '/online/manifest.json');
+    if (!res.ok) return 0; // online images are optional — fail silently
+    let files;
+    try { files = await res.json(); } catch(e) { return 0; }
+    osImgMap = {};
+    let n = 0;
+    for (const relPath of files) {
+      const name = relPath.split('/').pop();
+      if (!/\.(jpe?g|png|webp|gif|avif)$/i.test(name)) continue;
+      const url = base + '/online/' + relPath.split('/').map(encodeURIComponent).join('/');
+      const raw = name.replace(/\.[^/.]+$/, '').toLowerCase().trim();
+      const key = raw.replace(/[\s\-_]+\d+$/, '').trim() || raw;
+      (osImgMap[key] = osImgMap[key] || []).push(url);
+      const prefix = key.replace(/-rs\d+$/i, '');
+      if (prefix !== key) (osImgMap[prefix] = osImgMap[prefix] || []).push(url);
+      n++;
+    }
+    if (n > 0) {
+      const el = document.getElementById('os-st-imgs');
+      if (el) { el.textContent = '✓ ' + n + ' images linked (network)'; el.className = 'uz-status ok'; }
+      const zone = document.getElementById('os-zone-imgs');
+      if (zone) zone.classList.add('done');
+      const gridEl = document.getElementById('os-grid-wrap');
+      if (gridEl && gridEl.style.display !== 'none' && typeof applyOsFilters === 'function') applyOsFilters();
+    }
+    return n;
+  } catch(e) {
+    return 0;
+  }
+}
+
 function saveNetImgUrl() {
   const url = (document.getElementById('inp-net-img-url') || {}).value.trim();
   if (!url) {
@@ -402,6 +436,7 @@ function saveNetImgUrl() {
   localStorage.setItem(NET_IMG_KEY, url);
   showToast('Connecting to image server…');
   loadImagesFromNetworkUrl(url);
+  loadOnlineImagesFromNetworkUrl(url);
 }
 
 async function tryRestoreNetworkImages() {
@@ -414,6 +449,7 @@ async function tryRestoreNetworkImages() {
     const input = document.getElementById('inp-net-img-url');
     if (input) input.value = base;
     if (!Object.keys(imgMap).length) await loadImagesFromNetworkUrl(base);
+    if (!Object.keys(osImgMap).length) await loadOnlineImagesFromNetworkUrl(base);
     return;
   }
 
@@ -422,4 +458,5 @@ async function tryRestoreNetworkImages() {
   const input = document.getElementById('inp-net-img-url');
   if (input) input.value = url;
   if (!Object.keys(imgMap).length) await loadImagesFromNetworkUrl(url);
+  if (!Object.keys(osImgMap).length) await loadOnlineImagesFromNetworkUrl(url);
 }
