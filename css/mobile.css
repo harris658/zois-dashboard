@@ -190,30 +190,13 @@
 
 /* ── Analytics tab ───────────────────────────────────────────── */
 @media (max-width: 640px) {
-  .a-wrap {
-    padding: 20px 12px 52px;
-    gap: 32px;
-  }
-
-  .a-section-hdr {
-    flex-wrap: wrap;
-    gap: 2px;
-  }
-
-  .a-section-title { font-size: 17px; }
-
   .a-kpi-val { font-size: 22px; }
 
-  .a-bar-row {
-    grid-template-columns: 36px 1fr 36px;
-    gap: 6px;
-  }
-
-  .a-bar-lbl  { font-size: 11px; }
-  .a-bar-val  { font-size: 10.5px; }
+  .a-bar-row  { gap: 6px; }
+  .a-bar-lbl  { width: 32px; font-size: 11px; }
+  .a-bar-val  { width: 36px; font-size: 10.5px; }
 
   .a-prod-table { font-size: 12px; }
-  .a-sz-table   { font-size: 11.5px; }
 
   .a-kpi { padding: 13px 14px; }
   .a-kpi-val { font-size: 22px; }

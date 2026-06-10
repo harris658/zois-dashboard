@@ -213,6 +213,8 @@
   padding: 4px 0 8px;
   cursor: pointer;
   font-family: var(--sans);
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 .hs-chev {
