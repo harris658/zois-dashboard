@@ -96,3 +96,8 @@ def test_online_sort_fns_in_online_js():
     assert "function sortOnlineProducts" in src
     assert "toggleOsSortPanel" in src
     assert "selectOsSort" in src
+
+def test_history_engine_in_build():
+    html = (DIST / "index.html").read_text()
+    assert "computeMonthlyMovement" in html
+    assert "recordHistory" in html

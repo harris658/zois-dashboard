@@ -17,7 +17,7 @@ css_files = [
     "home.css","analytics.css","mobile.css",
 ]
 js_files = [
-    "state.js","idb.js","settings.js","parse.js","store-filters.js",
+    "state.js","idb.js","history.js","settings.js","parse.js","store-filters.js",
     "store-render.js","store-modal.js","online.js","feed.js","profile.js","tabs.js","analytics.js",
 ]
 

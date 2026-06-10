@@ -350,6 +350,10 @@ function launch() {
   saveSyncTime('store');
   document.getElementById('s-total').textContent = products.length;
   computeDiff();
+  recordHistory(products).then(() => {
+    const pgrid = document.getElementById('pgrid');
+    if (pgrid && pgrid.querySelector('.home-dash')) renderHomeDashboard();
+  });
 }
 
 // ── Network image server ───────────────────────────────────────────────────
