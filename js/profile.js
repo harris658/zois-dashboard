@@ -296,6 +296,9 @@ async function initFromCache() {
 
   // ── Network image server (auto-connects if no local folder loaded) ──────
   await tryRestoreNetworkImages();
+
+  // ── Central data feed (published with the app — see js/feed.js) ─────────
+  await checkRemoteFeed();
 }
 
 async function reloadImgsFromHandle(which) {

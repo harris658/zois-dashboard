@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Builds PWA output in dist/ from stock-dashboard.html + css/ + js/ + images/."""
 import base64, hashlib, re, json, shutil
+from datetime import datetime
 from pathlib import Path
 from PIL import Image
 
@@ -17,7 +18,7 @@ css_files = [
 ]
 js_files = [
     "state.js","idb.js","settings.js","parse.js","store-filters.js",
-    "store-render.js","store-modal.js","online.js","profile.js","tabs.js","analytics.js",
+    "store-render.js","store-modal.js","online.js","feed.js","profile.js","tabs.js","analytics.js",
 ]
 
 css_block = "\n".join((ROOT/"css"/f).read_text(encoding="utf-8") for f in css_files)
@@ -91,6 +92,26 @@ content_hash = hashlib.md5(html.encode()).hexdigest()[:8]
 sw_src = (ROOT / "sw.js").read_text(encoding="utf-8")
 sw_src = sw_src.replace("'zois-v1'", f"'zois-{content_hash}'")
 (DIST / "sw.js").write_text(sw_src, encoding="utf-8")
+
+# Central data feed — publish data/ files with a version manifest.
+# No data/ folder → no feed; the app's fetch 404s silently and IDB restore applies.
+DATA = ROOT / "data"
+if DATA.is_dir():
+    (DIST / "data").mkdir(exist_ok=True)
+    feed = {}
+    for which in ("store", "online"):
+        src = next((DATA / f"{which}{ext}" for ext in (".xlsx", ".xls", ".csv")
+                    if (DATA / f"{which}{ext}").exists()), None)
+        if not src:
+            continue
+        shutil.copy(src, DIST / "data" / src.name)
+        feed[which] = {
+            "file": src.name,
+            "hash": hashlib.md5(src.read_bytes()).hexdigest()[:12],
+            "updated": datetime.fromtimestamp(src.stat().st_mtime).astimezone().isoformat(timespec="seconds"),
+        }
+    (DIST / "data" / "feed.json").write_text(json.dumps(feed, indent=2), encoding="utf-8")
+    print(f"✓ dist/data/feed.json ({', '.join(feed) or 'empty'})")
 
 # Icons — resize logo.png to 192×192 and 512×512
 logo = Image.open(ROOT / "images" / "logo.png").convert("RGBA")

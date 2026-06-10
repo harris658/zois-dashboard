@@ -31,13 +31,42 @@ Nothing to do. When a new version is deployed, your app updates silently the nex
 ```
 stock-dashboard.html    ← source HTML (references css/ and js/)
 css/                    ← 13 CSS files
-js/                     ← 11 JS files
+js/                     ← 12 JS files
 images/logo.png         ← ZOIS logo
 sw.js                   ← service worker source
 build-standalone.py     ← build script (produces dist/)
-tests/test_build.py     ← build output tests
+data/                   ← optional: central stock feed (store.xlsx / online.xlsx)
+tests/                  ← Python build tests + Node JS unit tests
 .github/workflows/      ← CI/CD deploy workflow
 ```
+
+### Updating the stock data (central feed)
+
+One person updates the Excel — every installed app picks it up automatically on next open.
+
+```bash
+# from inside this folder
+mkdir -p data
+cp "/path/to/latest stock export.xlsx" data/store.xlsx   # and/or data/online.xlsx
+git add data/
+git commit -m "data: stock update"
+git push
+```
+
+Accepted names: `data/store.xlsx|.xls|.csv` and `data/online.xlsx|.xls|.csv`. The build
+publishes them with a version manifest (`dist/data/feed.json`); on open the app downloads
+any new version and loads it exactly like a manual upload. Rules:
+
+- A file **linked on disk** (Profile tab → Link file) always wins — the feed never overrides it
+- Offline → the app falls back to its saved IndexedDB copy as before
+- Manual uploads still work and are kept until the *next* feed version is published
+- The sync chip in the header shows when the feed data was published, not when the device loaded it
+- **Images are NOT part of the feed** — the folder is too large for GitHub Pages. Staff load
+  images from the LAN image server (`tools/start-image-server.bat` on the main PC) as before
+
+⚠️ Note: this repo and its GitHub Pages site are **public**. Anything committed to `data/`
+is reachable by anyone with the URL. Stock counts and product codes only — no pricing
+secrets — but keep that in mind before committing.
 
 ### Making changes
 
@@ -70,10 +99,15 @@ This produces a `dist/` folder with the full PWA (inlined HTML, manifest, servic
 
 ```bash
 pip install pytest Pillow
-pytest tests/ -v
+pytest tests/ -v                  # build output + data feed publishing
+node --test tests/js/*.test.mjs   # parser, grouping, and feed logic unit tests
 ```
 
-17 tests verify the build output: correct files exist, manifest fields are valid, icons are the right size, CSS and SW registration are present, sort controls are in the HTML, and size filtering logic is in the source.
+Both suites run in CI before every deploy — a failing test blocks the deployment, so a
+broken build can never reach staff. The Python tests verify the build output (files,
+manifest, icons, feed.json); the Node tests load the real `js/` sources into a stub DOM
+and unit-test `processRows`, `processRowsLong`, `extractBaseCode`, `groupOnlineRows`, and
+`checkRemoteFeed`.
 
 ---
 
