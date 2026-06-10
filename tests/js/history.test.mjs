@@ -104,6 +104,32 @@ test('newArrivals counts firstSeen inside the window but excludes the initial im
   assert.equal(mv.newArrivals, 1); // K3 only — K1 was the initial import (firstSeen == start)
 });
 
+test('prune boundary: an entry exactly 35 days old is kept', async () => {
+  idb.set('store-history', {
+    start: '2026-05-06',
+    days: { '2026-05-06': { K9: 5 } }, // exactly 35 days before 2026-06-10
+    firstSeen: { K9: '2026-05-06' },
+  });
+  ctx.__p = [{ code: 'K1', sizes: { S: 2 } }];
+  await run(ctx, "recordHistory(__p, new Date('2026-06-10T12:00:00'))");
+  const h = JSON.parse(JSON.stringify(idb.get('store-history')));
+  assert.deepEqual(h.days['2026-05-06'], { K9: 5 });
+});
+
+test('migration skips snapshots with missing or invalid dates', async () => {
+  idb.set('store-snapshots', [
+    { products: [{ code: 'BAD', sizes: { S: 1 } }] },                      // no date
+    { date: 'not-a-date', products: [{ code: 'BAD2', sizes: { S: 1 } }] }, // unparseable
+    { date: '2026-06-09T10:00:00', products: [{ code: 'K1', sizes: { S: 3 } }] },
+  ]);
+  ctx.__p = [{ code: 'K1', sizes: { S: 2 } }];
+  await run(ctx, "recordHistory(__p, new Date('2026-06-10T12:00:00'))");
+  const h = JSON.parse(JSON.stringify(idb.get('store-history')));
+  assert.equal(h.start, '2026-06-09');
+  assert.equal(Object.keys(h.days).some(k => k.includes('NaN')), false);
+  assert.equal(h.firstSeen.BAD, undefined);
+});
+
 test('movers are top 5 sorted by units out', () => {
   const days = { '2026-06-01': {}, '2026-06-02': {} };
   const firstSeen = {};

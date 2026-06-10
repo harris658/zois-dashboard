@@ -36,13 +36,16 @@ async function _migrateSnapshots() {
   if (!snaps || !snaps.length) return null;
   const hist = { start: null, days: {}, firstSeen: {} };
   snaps.forEach(s => {
+    if (!s.date) return;
     const key = _dayKey(new Date(s.date));
+    if (key.includes('NaN')) return;
     hist.days[key] = buildDayEntry(s.products); // later snapshot same day wins
     if (!hist.start || key < hist.start) hist.start = key;
     Object.keys(hist.days[key]).forEach(code => {
       if (!hist.firstSeen[code] || key < hist.firstSeen[code]) hist.firstSeen[code] = key;
     });
   });
+  if (!hist.start) return null;
   await idbDelete('store-snapshots');
   return hist;
 }
@@ -67,7 +70,7 @@ async function recordHistory(productsArr, now) {
     window._histCache = hist;
     return hist;
   } catch (e) {
-    console.log('history record failed:', e);
+    console.warn('history record failed:', e);
     return null;
   }
 }
@@ -103,7 +106,7 @@ function computeMonthlyMovement(hist, now) {
     .map(([code, units]) => ({ code, units }));
   result.stylesMoved = Object.keys(outByCode).length;
   result.unitsOut = Object.values(outByCode).reduce((a, b) => a + b, 0);
-  result.newArrivals = Object.values(hist.firstSeen)
+  result.newArrivals = Object.values(hist.firstSeen || {})
     .filter(d => d >= cutoff && d > hist.start).length;
   return result;
 }
