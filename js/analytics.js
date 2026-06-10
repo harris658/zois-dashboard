@@ -253,12 +253,45 @@ function computeOsAnalytics() {
   return { totalSKUs, totalActual, totalExpected, variance, catMap, sizeMap, exactMatch, withVariance, outOfStock };
 }
 
-// ── Online Analytics: render ───────────────────────────────────────────────
-function renderOsAnalyticsHTML() {
+// ── Online Analytics: Stock Count (always visible) ─────────────────────────
+function renderOsCountHTML() {
   const data = computeOsAnalytics();
   if (!data) return '';
+  const { totalSKUs, totalActual, totalExpected, variance, exactMatch, withVariance, outOfStock } = data;
 
-  const { totalSKUs, totalActual, totalExpected, variance, catMap, sizeMap, exactMatch, withVariance, outOfStock } = data;
+  const varClass = variance === 0 ? 'ok' : variance < 0 ? 'err' : 'warn';
+  const varLabel = variance === 0 ? 'perfectly balanced' : variance > 0 ? 'excess stock' : 'stock shortage';
+
+  const maxAcc = Math.max(exactMatch, withVariance, outOfStock, 1);
+  const band = (status, label, count, color) =>
+    '<div class="a-band-item" onclick="filterOsByStatus(\'' + status + '\')">' +
+      '<div class="a-band-meta"><span class="a-band-lbl">' + label + '</span>' +
+      '<span class="a-band-nums">' + N(count) + ' styles</span></div>' +
+      '<div class="a-band-track"><div class="a-band-fill" style="width:' +
+      (count / maxAcc * 100).toFixed(1) + '%;background:var(--' + color + ')"></div></div>' +
+    '</div>';
+
+  return '<div class="home-section">' +
+    '<div class="hs-title">Stock Count</div>' +
+    '<div class="a-kpi-row a-kpi-row-4">' +
+      '<div class="a-kpi hi"><div class="a-kpi-label">Total SKUs</div><div class="a-kpi-val">' + N(totalSKUs) + '</div><div class="a-kpi-sub">unique base codes</div></div>' +
+      '<div class="a-kpi"><div class="a-kpi-label">Actual</div><div class="a-kpi-val">' + N(totalActual) + '</div><div class="a-kpi-sub">pieces counted</div></div>' +
+      '<div class="a-kpi"><div class="a-kpi-label">Expected</div><div class="a-kpi-val">' + N(totalExpected) + '</div><div class="a-kpi-sub">per system</div></div>' +
+      '<div class="a-kpi ' + varClass + '"><div class="a-kpi-label">Variance</div><div class="a-kpi-val">' + (variance >= 0 ? '+' : '') + N(variance) + '</div><div class="a-kpi-sub">' + varLabel + '</div></div>' +
+    '</div>' +
+    '<div class="a-card"><div class="a-card-title">Stock Accuracy</div><div class="a-band-list">' +
+      band('exact', 'Exact Match', exactMatch, 'ok') +
+      band('diff', 'Has Variance', withVariance, 'warn') +
+      band('out', 'Has Out-of-Stock Size', outOfStock, 'err') +
+    '</div></div>' +
+  '</div>';
+}
+
+// ── Online Analytics: Breakdown (collapsed) ────────────────────────────────
+function renderOsBreakdownHTML() {
+  const data = computeOsAnalytics();
+  if (!data) return '';
+  const { catMap, sizeMap } = data;
 
   const catRows = Object.entries(catMap).sort((a, b) => b[1].actual - a[1].actual);
   const hasCats = catRows.length > 1;
@@ -271,105 +304,30 @@ function renderOsAnalyticsHTML() {
   ];
   const maxSizeUnits = Math.max(...allSizes.map(s => sizeMap[s]), 1);
 
-  const varClass = variance === 0 ? 'ok' : variance < 0 ? 'err' : 'warn';
-  const varLabel = variance === 0 ? 'perfectly balanced' : variance > 0 ? 'excess stock' : 'stock shortage';
-
   const catTableRows = catRows.map(([catName, v]) => {
     const accPct = v.expected > 0 ? Math.round(v.actual / v.expected * 100) : 100;
-    return `<tr onclick="filterOsByStat('os-f-cat','${escHtml(catName)}')" style="cursor:pointer">
-      <td>
-        <div class="a-pt-name">${escHtml(catName)}</div>
-        <div class="a-pt-bar-wrap"><div class="a-pt-bar" style="width:${(v.actual / maxCatUnits * 100).toFixed(1)}%"></div></div>
-      </td>
-      <td>${N(v.skus)}</td>
-      <td>${N(v.actual)}</td>
-      <td>${accPct}%</td>
-    </tr>`;
+    return '<tr onclick="filterOsByStat(\'os-f-cat\',\'' + escHtml(catName) + '\')">' +
+      '<td><div class="a-pt-name">' + escHtml(catName) + '</div>' +
+      '<div class="a-pt-bar-wrap"><div class="a-pt-bar" style="width:' + (v.actual / maxCatUnits * 100).toFixed(1) + '%"></div></div></td>' +
+      '<td>' + N(v.skus) + '</td><td>' + N(v.actual) + '</td><td>' + accPct + '%</td></tr>';
   }).join('');
 
   const sizeBarRows = allSizes.map(sz =>
-    `<div class="a-bar-row" onclick="filterOsByStat('os-f-size','${escHtml(sz)}')" style="cursor:pointer">
-      <span class="a-bar-lbl">${escHtml(sz)}</span>
-      <div class="a-bar-track"><div class="a-bar-fill" style="width:${(sizeMap[sz] / maxSizeUnits * 100).toFixed(1)}%"></div></div>
-      <span class="a-bar-val">${N(sizeMap[sz])}</span>
-    </div>`
+    '<div class="a-bar-row" onclick="filterOsByStat(\'os-f-size\',\'' + escHtml(sz) + '\')">' +
+      '<span class="a-bar-lbl">' + escHtml(sz) + '</span>' +
+      '<div class="a-bar-track"><div class="a-bar-fill" style="width:' + (sizeMap[sz] / maxSizeUnits * 100).toFixed(1) + '%"></div></div>' +
+      '<span class="a-bar-val">' + N(sizeMap[sz]) + '</span>' +
+    '</div>'
   ).join('');
 
-  const maxAcc = Math.max(exactMatch, withVariance, outOfStock, 1);
-  const accuracySection = `<div class="a-band-list">
-    <div class="a-band-item" onclick="filterOsByStatus('exact')" style="cursor:pointer">
-      <div class="a-band-meta">
-        <span class="a-band-lbl">Exact Match</span>
-        <span class="a-band-nums">${N(exactMatch)} styles</span>
-      </div>
-      <div class="a-band-track"><div class="a-band-fill" style="width:${(exactMatch / maxAcc * 100).toFixed(1)}%;background:var(--ok)"></div></div>
-    </div>
-    <div class="a-band-item" onclick="filterOsByStatus('diff')" style="cursor:pointer">
-      <div class="a-band-meta">
-        <span class="a-band-lbl">Has Variance</span>
-        <span class="a-band-nums">${N(withVariance)} styles</span>
-      </div>
-      <div class="a-band-track"><div class="a-band-fill" style="width:${(withVariance / maxAcc * 100).toFixed(1)}%;background:var(--warn)"></div></div>
-    </div>
-    <div class="a-band-item" onclick="filterOsByStatus('out')" style="cursor:pointer">
-      <div class="a-band-meta">
-        <span class="a-band-lbl">Has Out-of-Stock Size</span>
-        <span class="a-band-nums">${N(outOfStock)} styles</span>
-      </div>
-      <div class="a-band-track"><div class="a-band-fill" style="width:${(outOfStock / maxAcc * 100).toFixed(1)}%;background:var(--err)"></div></div>
-    </div>
-  </div>`;
+  const sizeCard = '<div class="a-card"><div class="a-card-title">Units By Size</div><div class="a-bar-list">' + sizeBarRows + '</div></div>';
 
-  const rightStack = `<div class="a-right-stack">
-    <div class="a-card">
-      <div class="a-card-title">Units By Size</div>
-      <div class="a-bar-list">${sizeBarRows}</div>
-    </div>
-    <div class="a-card">
-      <div class="a-card-title">Stock Accuracy</div>
-      ${accuracySection}
-    </div>
-  </div>`;
+  if (!hasCats) return '<div class="a-breakdown">' + sizeCard + '</div>';
 
-  return `<div class="home-section">
-    <div class="a-kpi-row-4">
-      <div class="a-kpi hi">
-        <div class="a-kpi-label">Total SKUs</div>
-        <div class="a-kpi-val">${N(totalSKUs)}</div>
-        <div class="a-kpi-sub">unique base codes</div>
-      </div>
-      <div class="a-kpi">
-        <div class="a-kpi-label">Actual Units</div>
-        <div class="a-kpi-val">${N(totalActual)}</div>
-        <div class="a-kpi-sub">pieces counted</div>
-      </div>
-      <div class="a-kpi">
-        <div class="a-kpi-label">Expected Units</div>
-        <div class="a-kpi-val">${N(totalExpected)}</div>
-        <div class="a-kpi-sub">per system records</div>
-      </div>
-      <div class="a-kpi ${varClass}">
-        <div class="a-kpi-label">Variance</div>
-        <div class="a-kpi-val">${variance >= 0 ? '+' : ''}${N(variance)}</div>
-        <div class="a-kpi-sub">${varLabel}</div>
-      </div>
-    </div>
-
-    <div class="a-two-col">
-      ${hasCats ? `<div class="a-card">
-        <div class="a-card-title">By Category</div>
-        <table class="a-prod-table">
-          <thead><tr><th>Category</th><th>SKUs</th><th>Actual</th><th>Accuracy</th></tr></thead>
-          <tbody>${catTableRows}</tbody>
-        </table>
-      </div>` : `<div class="a-card">
-        <div class="a-card-title">Units By Size</div>
-        <div class="a-bar-list">${sizeBarRows}</div>
-      </div>`}
-      ${hasCats ? rightStack : `<div class="a-card">
-        <div class="a-card-title">Stock Accuracy</div>
-        ${accuracySection}
-      </div>`}
-    </div>
-  </div>`;
+  return '<div class="a-breakdown"><div class="a-two-col">' +
+    '<div class="a-card"><div class="a-card-title">By Category</div>' +
+      '<table class="a-prod-table"><thead><tr><th>Category</th><th>SKUs</th><th>Actual</th><th>Accuracy</th></tr></thead>' +
+      '<tbody>' + catTableRows + '</tbody></table></div>' +
+    sizeCard +
+  '</div></div>';
 }

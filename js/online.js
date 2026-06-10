@@ -250,17 +250,10 @@ function renderOsPrompt() {
   const grid = document.getElementById('os-pgrid');
   let html = '<div class="home-dash">';
 
-  // ── Online stock analytics (comes first, like store) ────────────────────
-  if (onlineProducts && onlineProducts.length) {
-    html += renderOsAnalyticsHTML();
-  }
-
-  // ── Platform listing stats ───────────────────────────────────────────────
-  // When category sheets are loaded, derive counts from onlineProducts so
-  // styles = unique design codes (not individual size barcodes from Daily Feed).
+  // ── 1. Listing health — platform cards, OOS first ────────────────────────
   if (dailyFeedStats && Object.keys(dailyFeedStats).length) {
     const useProducts = onlineProducts.length > 0 && Object.keys(platformStylesMap).length > 0;
-    html += '<div class="home-section"><div class="hs-title">Platform Listings</div><div class="platform-cards">';
+    html += '<div class="home-section"><div class="hs-title">Listing Health</div><div class="platform-cards">';
     Object.entries(PLATFORM_LABELS).forEach(([key, label]) => {
       if (!dailyFeedStats[key]) return;
       let styles, skus, outOfStock;
@@ -281,12 +274,19 @@ function renderOsPrompt() {
         : '<div class="pc-oos pc-ok">All in stock</div>';
       html += '<div class="platform-card' + (osPlatformFilter === key ? ' pc-active' : '') + '" onclick="togglePlatformFilter(\'' + key + '\')">' +
         '<div class="pc-name">' + label + '</div>' +
+        oosHtml +
         '<div class="pc-stat"><span class="pc-num">' + styles + '</span> styles</div>' +
         '<div class="pc-skus">' + skus + ' SKUs</div>' +
-        oosHtml +
         '</div>';
     });
     html += '</div></div>';
+  }
+
+  // ── 2. Stock count ────────────────────────────────────────────────────────
+  if (onlineProducts && onlineProducts.length) {
+    html += renderOsCountHTML();
+    // ── 3. Breakdown (collapsed) ────────────────────────────────────────────
+    html += renderCollapse('online', 'Stock Breakdown', renderOsBreakdownHTML());
   }
 
   // ── Hints ────────────────────────────────────────────────────────────────
