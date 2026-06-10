@@ -44,6 +44,13 @@ tests/                  ← Python build tests + Node JS unit tests
 
 One person updates the Excel — every installed app picks it up automatically on next open.
 
+**From the main PC (recommended):** double-click `tools\publish-data.bat`. One-time setup:
+open it in Notepad and set `STOCK_FILE` to wherever the stock Excel lives on that PC
+(same idea as `start-image-server.bat`). The PC needs git installed, this repo cloned,
+and a GitHub login — after that, publishing is a double-click.
+
+**Manually, from any clone:**
+
 ```bash
 # from inside this folder
 mkdir -p data
