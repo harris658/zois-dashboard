@@ -115,7 +115,7 @@ function renderStoreAnalyticsHTML() {
   const catTableRows = catRows.map(([catName, v]) => {
     const avgMrp = v.priceCount > 0 ? Math.round(v.priceSum / v.priceCount) : null;
     return `
-            <tr onclick="filterByStat('f-cat', '${escHtml(catName)}')" style="cursor:pointer">
+            <tr onclick="filterByStat('f-cat', '${escHtml(escJs(catName))}')" style="cursor:pointer">
               <td>
                 <div class="a-pt-name">${escHtml(catName)}</div>
                 <div class="a-pt-bar-wrap">
@@ -132,7 +132,7 @@ function renderStoreAnalyticsHTML() {
   const sizeBarRows = SIZE_ORDER
     .filter(sz => sizeMap[sz] > 0)
     .map(sz => `
-            <div class="a-bar-row" onclick="filterByStat('f-size', '${escHtml(sz)}')" style="cursor:pointer">
+            <div class="a-bar-row" onclick="filterByStat('f-size', '${escHtml(escJs(sz))}')" style="cursor:pointer">
               <span class="a-bar-lbl">${escHtml(sz)}</span>
               <div class="a-bar-track">
                 <div class="a-bar-fill" style="width:${(sizeMap[sz] / maxSizeUnits * 100).toFixed(1)}%"></div>
@@ -144,7 +144,7 @@ function renderStoreAnalyticsHTML() {
   const priceSection = hasPrices
     ? `<div class="a-band-list">
             ${bands.map(b => `
-            <div class="a-band-item" onclick="filterByPrice('${escHtml(b.label)}', ${b.min}, ${b.max === Infinity ? 'Infinity' : b.max})" style="cursor:pointer">
+            <div class="a-band-item" onclick="filterByPrice('${escHtml(escJs(b.label))}', ${b.min}, ${b.max === Infinity ? 'Infinity' : b.max})" style="cursor:pointer">
               <div class="a-band-meta">
                 <span class="a-band-lbl">${b.label}</span>
                 <span class="a-band-nums">${N(b.count)} styles</span>
@@ -306,14 +306,14 @@ function renderOsBreakdownHTML() {
 
   const catTableRows = catRows.map(([catName, v]) => {
     const accPct = v.expected > 0 ? Math.round(v.actual / v.expected * 100) : 100;
-    return '<tr onclick="filterOsByStat(\'os-f-cat\',\'' + escHtml(catName) + '\')">' +
+    return '<tr onclick="filterOsByStat(\'os-f-cat\',\'' + escHtml(escJs(catName)) + '\')">' +
       '<td><div class="a-pt-name">' + escHtml(catName) + '</div>' +
       '<div class="a-pt-bar-wrap"><div class="a-pt-bar" style="width:' + (v.actual / maxCatUnits * 100).toFixed(1) + '%"></div></div></td>' +
       '<td>' + N(v.skus) + '</td><td>' + N(v.actual) + '</td><td>' + accPct + '%</td></tr>';
   }).join('');
 
   const sizeBarRows = allSizes.map(sz =>
-    '<div class="a-bar-row" onclick="filterOsByStat(\'os-f-size\',\'' + escHtml(sz) + '\')">' +
+    '<div class="a-bar-row" onclick="filterOsByStat(\'os-f-size\',\'' + escHtml(escJs(sz)) + '\')">' +
       '<span class="a-bar-lbl">' + escHtml(sz) + '</span>' +
       '<div class="a-bar-track"><div class="a-bar-fill" style="width:' + (sizeMap[sz] / maxSizeUnits * 100).toFixed(1) + '%"></div></div>' +
       '<span class="a-bar-val">' + N(sizeMap[sz]) + '</span>' +
