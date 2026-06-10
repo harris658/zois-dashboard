@@ -180,3 +180,52 @@
   flex-wrap: wrap;
   padding-top: 2px;
 }
+
+/* ── Section label extras ────────────────────────────────────── */
+.hs-sub {
+  font-weight: 500;
+  letter-spacing: .02em;
+  text-transform: none;
+  color: var(--light);
+  font-size: 10px;
+  margin-left: 6px;
+}
+
+.hs-note {
+  font-size: 13px;
+  color: var(--mid);
+  font-style: italic;
+  background: var(--white);
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  padding: 14px;
+}
+
+/* ── Collapsible section toggle ──────────────────────────────── */
+.hs-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border2);
+  padding: 4px 0 8px;
+  cursor: pointer;
+  font-family: var(--sans);
+}
+
+.hs-chev {
+  color: var(--light);
+  font-size: 12px;
+  transition: transform .15s var(--ease);
+}
+
+.hs-toggle.open .hs-chev { transform: rotate(180deg); }
+
+.hs-body {
+  padding-top: 8px;
+}
+
+.diff-row.tappable { cursor: pointer; border-radius: 6px; }
+.diff-row.tappable:hover .diff-code { color: var(--br); }
