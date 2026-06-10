@@ -125,10 +125,10 @@ function renderMonthBlockHTML() {
     if (mv.movers.length) {
       inner += '<div class="a-card"><div class="a-card-title">Biggest Movers</div><div class="diff-list">' +
         mv.movers.map(m =>
-          '<div class="diff-row tappable" onclick="searchByCode(\'' + escHtml(m.code) + '\')">' +
+          '<div class="diff-row tappable" onclick="searchByCode(\'' + escHtml(escJs(m.code)) + '\')">' +
             '<span class="diff-code">' + escHtml(m.code) + '</span>' +
             '<span class="diff-name">' + escHtml(nameOf(m.code).slice(0, 28)) + '</span>' +
-            '<span class="diff-chip sold">−' + m.units + '</span>' +
+            '<span class="diff-chip sold">−' + N(m.units) + '</span>' +
           '</div>').join('') +
         '</div></div>';
     }
@@ -201,3 +201,4 @@ function renderGrid(list, activeSz) {
 function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+function escJs(s) { return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
