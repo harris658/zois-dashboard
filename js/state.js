@@ -16,7 +16,6 @@ let osRawData = [];
 let dailyFeedStats    = null;  // platform listing stats from Daily Feed sheet
 let platformStylesMap = {};   // baseCode.toLowerCase() → Set of platforms listed on
 let osPlatformFilter  = null; // 'flipkart' | 'ajio' | 'myntra' | 'limeroad' | null
-let stockDiff         = null; // stock delta vs previous upload [{code,name,delta}]
 
 const OS_REQUIRED = ['code','size','expected','actual'];
 const OS_COL_PATTERNS = {

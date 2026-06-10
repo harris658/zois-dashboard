@@ -83,46 +83,66 @@ const PLATFORM_LABELS = { flipkart: 'Flipkart', ajio: 'AJIO', myntra: 'Myntra', 
 function renderHomeDashboard() {
   const grid = document.getElementById('pgrid');
   let html = '<div class="home-dash">';
-
-  // ── Stock changes since last upload ─────────────────────────────────────
-  if (stockDiff && stockDiff.length) {
-    const sold     = stockDiff.filter(d => d.delta < 0).slice(0, 5);
-    const returned = stockDiff.filter(d => d.delta > 0).slice(0, 5);
-    if (sold.length || returned.length) {
-      html += '<div class="home-section"><div class="hs-title">Since Last Upload</div><div class="changes-cols">';
-
-      const renderCol = (items, cls, sign) => {
-        if (!items.length) return '';
-        return '<div class="changes-col">' +
-          '<div class="cc-label">' + (cls === 'sold' ? 'Sold' : 'Returned / Restocked') + '</div>' +
-          '<div class="diff-list">' +
-          items.map(d =>
-            '<div class="diff-row">' +
-              '<span class="diff-code">' + escHtml(d.code) + '</span>' +
-              (d.name ? '<span class="diff-name">' + escHtml(d.name.slice(0,28)) + '</span>' : '') +
-              '<span class="diff-chip ' + cls + '">' + sign + Math.abs(d.delta) + '</span>' +
-            '</div>'
-          ).join('') +
-          '</div></div>';
-      };
-
-      html += renderCol(sold, 'sold', '−');
-      html += renderCol(returned, 'returned', '+');
-      html += '</div></div>';
-    }
-  }
-
-  if (products.length) { html += renderStoreAnalyticsHTML(); }
-
-  // ── Search hints ─────────────────────────────────────────────────────────
+  html += renderMonthBlockHTML();
+  if (products.length) html += renderCollapse('store', 'Stock Breakdown', renderStoreAnalyticsHTML());
   html += '<div class="home-hints">' +
     '<span class="hint-chip">Search by code or name</span>' +
     '<span class="hint-chip">Filter by size</span>' +
     '<span class="hint-chip">Filter by colour</span>' +
     '</div>';
-
   html += '</div>';
   grid.innerHTML = html;
+}
+
+function _fmtDayKey(key) {
+  return new Date(key).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+}
+
+function renderMonthBlockHTML() {
+  const mv = window._histCache ? computeMonthlyMovement(window._histCache) : null;
+  let inner;
+  if (!mv || mv.trackedDays < 2) {
+    const sinceTxt = mv && mv.since ? _fmtDayKey(mv.since) : 'today';
+    inner = '<div class="hs-note">Tracking started ' + sinceTxt +
+      ' — movement appears here as daily updates build up.</div>';
+  } else {
+    const nameOf = code => {
+      const p = products.find(x => x.code === code);
+      return p && p.name ? p.name : '';
+    };
+    inner =
+      '<div class="a-kpi-row a-kpi-row-3">' +
+        '<div class="a-kpi hi"><div class="a-kpi-label">Styles Moved</div>' +
+          '<div class="a-kpi-val">' + N(mv.stylesMoved) + '</div>' +
+          '<div class="a-kpi-sub">last ' + mv.trackedDays + ' tracked days</div></div>' +
+        '<div class="a-kpi"><div class="a-kpi-label">Units Out</div>' +
+          '<div class="a-kpi-val">' + N(mv.unitsOut) + '</div>' +
+          '<div class="a-kpi-sub">estimated sold</div></div>' +
+        '<div class="a-kpi"><div class="a-kpi-label">New Arrivals</div>' +
+          '<div class="a-kpi-val">' + N(mv.newArrivals) + '</div>' +
+          '<div class="a-kpi-sub">styles added</div></div>' +
+      '</div>';
+    if (mv.movers.length) {
+      inner += '<div class="a-card"><div class="a-card-title">Biggest Movers</div><div class="diff-list">' +
+        mv.movers.map(m =>
+          '<div class="diff-row tappable" onclick="searchByCode(\'' + escHtml(m.code) + '\')">' +
+            '<span class="diff-code">' + escHtml(m.code) + '</span>' +
+            '<span class="diff-name">' + escHtml(nameOf(m.code).slice(0, 28)) + '</span>' +
+            '<span class="diff-chip sold">−' + m.units + '</span>' +
+          '</div>').join('') +
+        '</div></div>';
+    }
+  }
+  return '<div class="home-section">' +
+    '<div class="hs-title">This Month <span class="hs-sub">estimated from stock changes</span></div>' +
+    inner + '</div>';
+}
+
+function searchByCode(code) {
+  const q = document.getElementById('q');
+  if (!q) return;
+  q.value = code;
+  applyFilters();
 }
 
 function renderPrompt() { renderHomeDashboard(); }

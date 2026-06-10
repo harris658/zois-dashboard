@@ -101,3 +101,5 @@ def test_history_engine_in_build():
     html = (DIST / "index.html").read_text()
     assert "computeMonthlyMovement" in html
     assert "recordHistory" in html
+    src_html = (ROOT / "stock-dashboard.html").read_text()
+    assert '<script src="js/history.js"></script>' in src_html

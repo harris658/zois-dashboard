@@ -3,6 +3,25 @@
 const N  = n => new Intl.NumberFormat('en-IN').format(n);
 const Rs = n => '₹' + new Intl.NumberFormat('en-IN').format(n);
 
+// ── Collapsible section (shared by store + online home views) ─────────────
+function renderCollapse(which, title, innerHTML) {
+  const open = localStorage.getItem('zois-collapse-' + which) === '1';
+  return '<div class="home-section">' +
+    '<button class="hs-toggle' + (open ? ' open' : '') + '" onclick="toggleCollapse(this, \'' + which + '\')">' +
+      '<span class="hs-title">' + title + '</span><span class="hs-chev">▾</span>' +
+    '</button>' +
+    '<div class="hs-body"' + (open ? '' : ' style="display:none"') + '>' + innerHTML + '</div>' +
+    '</div>';
+}
+
+function toggleCollapse(btn, which) {
+  const body = btn.parentElement.querySelector('.hs-body');
+  const open = body.style.display === 'none';
+  body.style.display = open ? '' : 'none';
+  btn.classList.toggle('open', open);
+  localStorage.setItem('zois-collapse-' + which, open ? '1' : '0');
+}
+
 // ── Active price-range filter (cleared by clearFilters) ───────────────────
 window._storePriceRange = null;
 
@@ -137,7 +156,7 @@ function renderStoreAnalyticsHTML() {
           </div>`
     : `<p class="a-footnote">Price breakdown unavailable — price column was not mapped during upload.</p>`;
 
-  return `<div class="home-section">
+  return `<div class="a-breakdown">
 
     <div class="a-kpi-row">
       <div class="a-kpi hi">

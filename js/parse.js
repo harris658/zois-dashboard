@@ -103,42 +103,8 @@ function setStatus(id, cls, msg) {
   el.className = 'uz-status ' + cls;
 }
 
-// ── Snapshot & diff ───────────────────────────────────────────────────────
-async function snapshotProducts() {
-  if (!products.length) return;
-  try {
-    const existing = (await idbGet('store-snapshots')) || [];
-    existing.push({ date: new Date().toISOString(), products });
-    if (existing.length > 10) existing.splice(0, existing.length - 10);
-    await idbSave('store-snapshots', existing);
-  } catch(e) { /* silent */ }
-}
-
-async function computeDiff() {
-  try {
-    const snaps = await idbGet('store-snapshots');
-    if (!snaps || !snaps.length) { stockDiff = null; return; }
-    const prev = snaps[snaps.length - 1].products;
-    const prevMap = {};
-    prev.forEach(p => { prevMap[p.code] = Object.values(p.sizes || {}).reduce((a,b)=>a+b,0); });
-    const diffs = [];
-    products.forEach(p => {
-      const newQty = Object.values(p.sizes || {}).reduce((a,b)=>a+b,0);
-      const oldQty = prevMap[p.code] ?? null;
-      if (oldQty !== null && newQty !== oldQty)
-        diffs.push({ code: p.code, name: p.name, delta: newQty - oldQty });
-    });
-    diffs.sort((a,b) => Math.abs(b.delta) - Math.abs(a.delta));
-    stockDiff = diffs.length ? diffs : null;
-    // Refresh home dashboard if it's currently displayed
-    const pgrid = document.getElementById('pgrid');
-    if (pgrid && pgrid.querySelector('.home-dash')) renderHomeDashboard();
-  } catch(e) { stockDiff = null; }
-}
-
 // ── Parse ─────────────────────────────────────────────────────────────────
 async function parseFile(file) {
-  await snapshotProducts();
   const buf = await file.arrayBuffer();
   let wb;
   if (file.name.toLowerCase().endsWith('.csv')) {
@@ -349,11 +315,10 @@ function launch() {
   renderHomeDashboard();
   saveSyncTime('store');
   document.getElementById('s-total').textContent = products.length;
-  computeDiff();
   recordHistory(products).then(() => {
     const pgrid = document.getElementById('pgrid');
     if (pgrid && pgrid.querySelector('.home-dash')) renderHomeDashboard();
-  });
+  }).catch(e => console.warn('history render failed:', e));
 }
 
 // ── Network image server ───────────────────────────────────────────────────
