@@ -101,6 +101,7 @@
   object-fit: cover;
   background: var(--bg);
   display: block;
+  flex-shrink: 0;
 }
 
 .card-ph {
@@ -110,6 +111,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 .card-ph svg { opacity: .18; }
 
