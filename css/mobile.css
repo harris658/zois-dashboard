@@ -84,7 +84,7 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
   }
-  .card-body { padding: 10px 10px 11px; }
+  .card-body { padding: 10px 10px 40px; }
 }
 
 /* ── Setup screens ───────────────────────────────────────────── */

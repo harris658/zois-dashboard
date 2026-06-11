@@ -79,6 +79,9 @@
 
 /* ── Product Card ────────────────────────────────────────────── */
 .card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
   background: var(--white);
   border-radius: 12px;
   overflow: hidden;
@@ -110,7 +113,7 @@
 }
 .card-ph svg { opacity: .18; }
 
-.card-body { padding: 12px 13px 13px; }
+.card-body { padding: 12px 13px 42px; flex: 1; }
 
 .card-code {
   font-size: 13.5px;

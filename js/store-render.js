@@ -89,7 +89,11 @@ function sortProducts(list) {
 }
 
 // ── Render ────────────────────────────────────────────────────────────────
-const PH_SVG = '<svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="28" width="40" height="14" rx="4" fill="#6B3A1F"/><ellipse cx="17" cy="42" rx="4" ry="4" fill="#6B3A1F"/><ellipse cx="39" cy="42" rx="4" ry="4" fill="#6B3A1F"/><path d="M8 32 C14 20 28 16 44 24" stroke="#6B3A1F" stroke-width="3" fill="none" stroke-linecap="round"/></svg>';
+const PH_SVG = '<svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+  '<path d="M22 7 L13 12 L7 24 L14 27 L14 49 L42 49 L42 27 L49 24 L43 12 L34 7" stroke="#6B3A1F" stroke-width="2.5" fill="none" stroke-linejoin="round"/>' +
+  '<path d="M22 7 C23 10.5 33 10.5 34 7" stroke="#6B3A1F" stroke-width="2.5" fill="none" stroke-linecap="round"/>' +
+  '<path d="M28 10 V30" stroke="#6B3A1F" stroke-width="2.5" stroke-linecap="round"/>' +
+  '</svg>';
 
 const PLATFORM_LABELS = { flipkart: 'Flipkart', ajio: 'AJIO', myntra: 'Myntra', limeroad: 'Limeroad' };
 
