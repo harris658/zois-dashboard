@@ -175,11 +175,9 @@ function renderGrid(list, activeSz) {
   list.forEach(p => {
     const src = (getImg(p.code) || [])[0];
     const availSz = sizeCols.filter(s => p.sizes[s] > 0);
-    const chips = availSz.map(s => {
-      const qty = p.sizes[s];
-      const inner = qty > 1 ? s + '<span class="chip-qty"> ×' + qty + '</span>' : s;
-      return '<span class="chip' + (s === activeSz ? ' hi' : '') + '">' + inner + '</span>';
-    }).join('');
+    const chips = availSz.map(s =>
+      szChipHTML(s, p.sizes[s], s === activeSz ? 'hi' : '')
+    ).join('');
     const imgHTML = src
       ? '<img class="card-img" src="' + src + '" alt="' + escHtml(p.code) + '" loading="lazy">'
       : '<div class="card-ph">' + PH_SVG + '</div>';
