@@ -209,16 +209,13 @@ body {
   transform: translateX(-50%) translateY(0);
 }
 
-/* ── Card share button ───────────────────────────────────── */
-.card-body {
-  position: relative;
-}
+/* ── Card share button (anchored to .card, not .card-body) ── */
 .card-share-btn {
   position: absolute;
-  bottom: 8px;
-  right: 8px;
-  width: 28px;
-  height: 28px;
+  bottom: 10px;
+  right: 10px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   border: none;
   background: #25D366;
@@ -228,7 +225,7 @@ body {
   justify-content: center;
   cursor: pointer;
   padding: 0;
-  opacity: 0.85;
+  opacity: 0.8;
   transition: opacity .15s, transform .15s;
   flex-shrink: 0;
 }

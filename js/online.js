@@ -454,13 +454,6 @@ function updateOsStats(shown, total) {
 }
 
 // ── Render grid ────────────────────────────────────────────────────────────
-function chipClass(s) {
-  if (s.actual === 0 && s.expected === 0) return 'nostock';
-  if (s.diff === 0) return 'exact';
-  if (s.diff > 0)   return 'excess';
-  return 'short';
-}
-
 function renderOsGrid(list) {
   list = sortOnlineProducts(list);
   const grid = document.getElementById('os-pgrid');
@@ -471,14 +464,7 @@ function renderOsGrid(list) {
   grid.innerHTML = '';
   list.forEach(p => {
     const src = (getOsImg(p.baseCode) || [])[0];
-    const chips = p.sizes.map(s => {
-      const cls = chipClass(s);
-      const sign = s.diff > 0 ? '+' : '';
-      return '<div class="os-chip ' + cls + '">' +
-        '<div class="os-chip-sz">' + escHtml(s.size) + '</div>' +
-        '<div class="os-chip-qty">' + s.actual + (s.diff !== 0 ? ' (' + sign + s.diff + ')' : '') + '</div>' +
-        '</div>';
-    }).join('');
+    const chips = p.sizes.map(s => szChipHTML(s.size, s.actual)).join('');
     const imgHTML = src
       ? '<img class="card-img" src="' + src + '" alt="' + escHtml(p.baseCode) + '" loading="lazy">'
       : '<div class="card-ph">' + PH_SVG + '</div>';
