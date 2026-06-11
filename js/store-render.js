@@ -60,11 +60,24 @@ function szChipHTML(size, qty, extra) {
 // ── Image lookup ──────────────────────────────────────────────────────────
 function _lookupImg(map, code) {
   const k = code.toLowerCase().trim();
-  return map[k]
+  const direct = map[k]
     || map[k.replace(/[\s_-]/g,'')]
     || map[k.replace(/\s/g,'_')]
-    || map[k.replace(/\s/g,'-')]
-    || null;
+    || map[k.replace(/\s/g,'-')];
+  if (direct) return direct;
+  // Fallback: filenames with descriptor suffixes (e.g. 1126-PPR-XL-RS1995.jpg)
+  // match when the code appears as a standalone token in the key.
+  if (k.length < 2) return null;
+  const out = [];
+  const seen = new Set();
+  for (const key in map) {
+    if (!key.includes(k)) continue;
+    if (!key.split(/[\s,_-]+/).includes(k)) continue;
+    for (const u of map[key]) {
+      if (!seen.has(u)) { seen.add(u); out.push(u); }
+    }
+  }
+  return out.length ? out : null;
 }
 function getImg(code)   { return _lookupImg(imgMap,   code); }
 function getOsImg(code) { return _lookupImg(osImgMap, code); }
