@@ -52,7 +52,7 @@ function szChipState(qty) {
 }
 
 function szChipHTML(size, qty, extra) {
-  const cls = 'sz-chip ' + szChipState(qty) + (extra ? ' ' + extra : '');
+  const cls = 'sz-chip ' + szChipState(qty) + (extra ? ' ' + escHtml(extra) : '');
   const qtyHTML = qty === 1 ? '' : '<span class="sz-qty">· ' + qty + '</span>';
   return '<span class="' + cls + '">' + escHtml(size) + qtyHTML + '</span>';
 }

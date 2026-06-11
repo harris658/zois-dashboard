@@ -38,4 +38,5 @@ test('szChipHTML with qty 0 shows muted oos chip with · 0', () => {
 test('szChipHTML appends extra class and escapes size', () => {
   assert.match(run(ctx, 'szChipHTML("L", 5, "hi")'), /class="sz-chip ok hi"/);
   assert.match(run(ctx, 'szChipHTML("<b>", 5)'), /&lt;b&gt;/);
+  assert.match(run(ctx, 'szChipHTML("L", 5, "hi\\"bad")'), /hi&quot;bad/);
 });
