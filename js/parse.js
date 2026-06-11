@@ -260,6 +260,19 @@ function processRowsLong(rows, codeC, nameC, colorC, catC, priceC, sizeC, qtyC) 
   products = order.map((code, i) => ({ ...groups[code], id: i }));
 }
 
+// Keep the dashboard to standard apparel sizes, but never drop a listed
+// product — sold-out items (all sizes 0) stay visible like in the sheet.
+function restrictToStandardSizes(productsArr, cols) {
+  const std = cols.filter(s => STANDARD_SIZES.some(x => x.toLowerCase() === s.toLowerCase()));
+  const stdSet = new Set(std.map(s => s.toLowerCase()));
+  productsArr.forEach(p => {
+    Object.keys(p.sizes).forEach(k => {
+      if (!stdSet.has(k.toLowerCase())) delete p.sizes[k];
+    });
+  });
+  return std;
+}
+
 // ── Launch ────────────────────────────────────────────────────────────────
 function launch() {
   const codeC = document.getElementById('map-code').value;
@@ -281,21 +294,7 @@ function launch() {
     processRows(allRows, codeC, nameC, colorC, catC, priceC);
   }
 
-  // Restrict to standard apparel sizes only
-  sizeCols = sizeCols.filter(s => STANDARD_SIZES.some(std => std.toLowerCase() === s.toLowerCase()));
-  products = products.filter(p =>
-    STANDARD_SIZES.some(s =>
-      Object.keys(p.sizes).some(k => k.toLowerCase() === s.toLowerCase() && p.sizes[k] > 0)
-    )
-  );
-
-  // Remove non-standard size keys from surviving products
-  const _stdSet = new Set(sizeCols.map(s => s.toLowerCase()));
-  products.forEach(p => {
-    Object.keys(p.sizes).forEach(k => {
-      if (!_stdSet.has(k.toLowerCase())) delete p.sizes[k];
-    });
-  });
+  sizeCols = restrictToStandardSizes(products, sizeCols);
 
   const _isLong2=document.getElementById('fmt-long').checked;
   localStorage.setItem(SETTINGS_KEY, JSON.stringify({...(loadSettings()||{}), store:{

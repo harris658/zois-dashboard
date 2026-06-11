@@ -58,9 +58,9 @@ def test_standard_sizes_constant_in_source():
     src = (ROOT / "js" / "parse.js").read_text()
     assert "STANDARD_SIZES" in src
 
-def test_standard_sizes_filters_products():
+def test_standard_sizes_restricted_without_dropping_products():
     src = (ROOT / "js" / "parse.js").read_text()
-    assert "products.filter" in src
+    assert "restrictToStandardSizes" in src
     assert "STANDARD_SIZES.some" in src
 
 def test_sort_styles_in_built_html():

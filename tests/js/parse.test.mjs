@@ -80,3 +80,30 @@ test('processRowsLong skips rows without code and sizes without value stay zero'
   assert.equal(run(ctx, 'products.length'), 1);
   assert.deepEqual(runJSON(ctx, 'products[0].sizes'), { M: 0 });
 });
+
+// ── restrictToStandardSizes (sold-out items stay listed) ────────────────────
+
+test('restrictToStandardSizes keeps zero-stock products listed', () => {
+  run(ctx, `
+    products = [
+      { code: '1126', sizes: { S: 0, M: 0, L: 0 } },
+      { code: 'K5119', sizes: { S: 2, M: 0, L: 5 } },
+    ];
+    sizeCols = restrictToStandardSizes(products, ['S','M','L']);
+  `);
+  assert.equal(run(ctx, 'products.length'), 2);
+  assert.equal(run(ctx, "products[0].code"), '1126');
+});
+
+test('restrictToStandardSizes filters size columns to standard apparel sizes', () => {
+  const cols = runJSON(ctx, `restrictToStandardSizes([], ['S','40','M','Free Size','xl'])`);
+  assert.deepEqual(cols, ['S', 'M', 'xl']);
+});
+
+test('restrictToStandardSizes strips non-standard size keys from products', () => {
+  run(ctx, `
+    products = [{ code: 'A1', sizes: { M: 1, '40': 3 } }];
+    restrictToStandardSizes(products, ['M','40']);
+  `);
+  assert.deepEqual(runJSON(ctx, 'products[0].sizes'), { M: 1 });
+});
