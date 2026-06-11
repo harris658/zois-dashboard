@@ -33,6 +33,17 @@
   --warn-bg:  #FEF5E0;
   --warn-border:#E8CE88;
 
+  /* Size chips */
+  --chip-ok:        var(--ok);
+  --chip-ok-bg:     var(--ok-bg);
+  --chip-ok-border: var(--ok-border);
+  --chip-low:        var(--warn);
+  --chip-low-bg:     var(--warn-bg);
+  --chip-low-border: var(--warn-border);
+  --chip-oos:        #A8554A;
+  --chip-oos-bg:     #F7EDEB;
+  --chip-oos-border: #E6CCC6;
+
   /* Type */
   --serif: 'Playfair Display', Georgia, serif;
   --sans:  'Jost', system-ui, sans-serif;
