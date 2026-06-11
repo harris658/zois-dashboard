@@ -28,6 +28,9 @@ def build_with_data():
         yield
     finally:
         shutil.rmtree(DATA, ignore_errors=True)
+        # Remove the published sample from dist/ too — leaving it behind would
+        # deploy fixture data as a live feed that overwrites real device stock.
+        shutil.rmtree(DIST / "data", ignore_errors=True)
 
 
 def test_data_file_copied_to_dist():

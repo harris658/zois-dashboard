@@ -95,7 +95,10 @@ sw_src = sw_src.replace("'zois-v1'", f"'zois-{content_hash}'")
 
 # Central data feed — publish data/ files with a version manifest.
 # No data/ folder → no feed; the app's fetch 404s silently and IDB restore applies.
+# Always clear dist/data first so a stale feed (e.g. left by a test run) is
+# never published — devices would silently load it over their real stock.
 DATA = ROOT / "data"
+shutil.rmtree(DIST / "data", ignore_errors=True)
 if DATA.is_dir():
     (DIST / "data").mkdir(exist_ok=True)
     feed = {}
