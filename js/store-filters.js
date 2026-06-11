@@ -43,6 +43,16 @@ document.addEventListener('click', e => {
   }
 });
 
+// ── Search ────────────────────────────────────────────────────────────────
+// Word-prefix match: "1126" finds codes 1126 / 1126-PPR but not K1126KH.
+// Every word of the query must prefix-match some token of the text.
+function searchMatches(text, q) {
+  q = q.trim().toLowerCase();
+  if (!q) return true;
+  const tokens = text.toLowerCase().split(/[\s,/_-]+/);
+  return q.split(/\s+/).every(w => tokens.some(t => t.startsWith(w)));
+}
+
 // ── Filters ───────────────────────────────────────────────────────────────
 function buildFilters() {
   // Reset all conditionally-hidden filter rows to visible before rebuilding
@@ -150,7 +160,7 @@ function applyFilters() {
   }
 
   const out = hasFilters ? products.filter(p => {
-    if (q && !(p.code + ' ' + p.name + ' ' + p.color).toLowerCase().includes(q)) return false;
+    if (q && !searchMatches(p.code + ' ' + p.name + ' ' + p.color, q)) return false;
     if (col && p.color !== col) return false;
     if (cat && p.category !== cat) return false;
     if (sz && !p.sizes[sz]) return false;

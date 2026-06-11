@@ -401,7 +401,7 @@ function applyOsFilters() {
     return;
   }
   const out = onlineProducts.filter(p => {
-    if (q && !p.baseCode.toLowerCase().includes(q) && !p.name.toLowerCase().includes(q)) return false;
+    if (q && !searchMatches(p.baseCode + ' ' + p.name, q)) return false;
     if (color  && p.color    !== color) return false;
     if (cat    && p.category !== cat)   return false;
     if (size   && !p.sizes.some(s => s.size === size && s.actual > 0)) return false;
