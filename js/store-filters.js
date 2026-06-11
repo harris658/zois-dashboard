@@ -44,6 +44,18 @@ document.addEventListener('click', e => {
 });
 
 // ── Search ────────────────────────────────────────────────────────────────
+// Debounced re-render while typing — one grid render per pause, not per key.
+let _qTimer = null;
+function queueFilters() {
+  clearTimeout(_qTimer);
+  _qTimer = setTimeout(applyFilters, 150);
+}
+let _osQTimer = null;
+function queueOsFilters() {
+  clearTimeout(_osQTimer);
+  _osQTimer = setTimeout(applyOsFilters, 150);
+}
+
 // Word-prefix match: "1126" finds codes 1126 / 1126-PPR but not K1126KH.
 // Every word of the query must prefix-match some token of the text.
 function searchMatches(text, q) {

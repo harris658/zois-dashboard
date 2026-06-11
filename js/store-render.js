@@ -58,6 +58,11 @@ function szChipHTML(size, qty, extra) {
 }
 
 // ── Image lookup ──────────────────────────────────────────────────────────
+// Token index per image map, built lazily on first miss — keeps grid renders
+// O(1) per card instead of rescanning every filename. Loaders rebuild maps by
+// reassignment (imgMap = {}), which gives a fresh index automatically.
+const _imgTokenIdx = new WeakMap();
+
 function _lookupImg(map, code) {
   const k = code.toLowerCase().trim();
   const direct = map[k]
@@ -68,16 +73,20 @@ function _lookupImg(map, code) {
   // Fallback: filenames with descriptor suffixes (e.g. 1126-PPR-XL-RS1995.jpg)
   // match when the code appears as a standalone token in the key.
   if (k.length < 2) return null;
-  const out = [];
-  const seen = new Set();
-  for (const key in map) {
-    if (!key.includes(k)) continue;
-    if (!key.split(/[\s,_-]+/).includes(k)) continue;
-    for (const u of map[key]) {
-      if (!seen.has(u)) { seen.add(u); out.push(u); }
+  let idx = _imgTokenIdx.get(map);
+  if (!idx) {
+    idx = Object.create(null);
+    for (const key in map) {
+      const tokens = new Set(key.split(/[\s,_-]+/));
+      for (const t of tokens) {
+        if (t.length < 2) continue;
+        const urls = (idx[t] = idx[t] || []);
+        for (const u of map[key]) if (!urls.includes(u)) urls.push(u);
+      }
     }
+    _imgTokenIdx.set(map, idx);
   }
-  return out.length ? out : null;
+  return idx[k] || null;
 }
 function getImg(code)   { return _lookupImg(imgMap,   code); }
 function getOsImg(code) { return _lookupImg(osImgMap, code); }
@@ -189,6 +198,7 @@ function renderGrid(list, activeSz) {
     return;
   }
   grid.innerHTML = '';
+  const frag = document.createDocumentFragment();
   list.forEach(p => {
     const src = (getImg(p.code) || [])[0];
     const availSz = sizeCols.filter(s => p.sizes[s] > 0);
@@ -221,8 +231,9 @@ function renderGrid(list, activeSz) {
           '</svg>' +
         '</button>' +
       '</div>';
-    grid.appendChild(card);
+    frag.appendChild(card);
   });
+  grid.appendChild(frag);
 }
 
 function escHtml(s) {
