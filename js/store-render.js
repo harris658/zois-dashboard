@@ -44,6 +44,19 @@ async function copyProductImage(code, idx = 0, imgs) {
   }
 }
 
+// ── Size chips (shared by store + online cards) ───────────────────────────
+function szChipState(qty) {
+  if (qty === 0) return 'oos';
+  if (qty <= 2)  return 'low';
+  return 'ok';
+}
+
+function szChipHTML(size, qty, extra) {
+  const cls = 'sz-chip ' + szChipState(qty) + (extra ? ' ' + extra : '');
+  const qtyHTML = qty === 1 ? '' : '<span class="sz-qty">· ' + qty + '</span>';
+  return '<span class="' + cls + '">' + escHtml(size) + qtyHTML + '</span>';
+}
+
 // ── Image lookup ──────────────────────────────────────────────────────────
 function _lookupImg(map, code) {
   const k = code.toLowerCase().trim();
