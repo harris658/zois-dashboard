@@ -186,9 +186,52 @@ function searchByCode(code) {
 
 function renderPrompt() { renderHomeDashboard(); }
 
+// Cards rendered per step. The first step paints immediately; the rest are
+// appended as the user scrolls, so a large catalog never blocks the main
+// thread in one long synchronous task.
+const GRID_BATCH = 48;
+let _gridObserver = null;
+
+function _buildCard(p, activeSz) {
+  const src = (getImg(p.code) || [])[0];
+  const availSz = sizeCols.filter(s => p.sizes[s] > 0);
+  const chips = availSz.map(s =>
+    szChipHTML(s, p.sizes[s], s === activeSz ? 'hi' : '')
+  ).join('');
+  const imgHTML = src
+    ? '<img class="card-img" src="' + src + '" alt="' + escHtml(p.code) + '" loading="lazy">'
+    : '<div class="card-ph">' + PH_SVG + '</div>';
+  const sub = [p.name, p.color].filter(Boolean).join(' · ');
+
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.onclick = () => openModal(p);
+  card.innerHTML = imgHTML +
+    '<div class="card-body">' +
+      '<div class="card-code">' + escHtml(p.code) + '</div>' +
+      (sub ? '<div class="card-sub">' + escHtml(sub) + '</div>' : '') +
+      '<div class="chips">' + (chips || '<span style="font-size:11px;color:var(--mid)">No sizes available</span>') + '</div>' +
+      '<button class="card-share-btn" title="Share on WhatsApp" aria-label="Share on WhatsApp" ' +
+        'onclick="event.stopPropagation();shareProduct(' +
+          JSON.stringify(p.code) + ',' +
+          JSON.stringify(p.name || '') + ',' +
+          JSON.stringify(p.price || '') + ',' +
+          JSON.stringify(availSz) +
+        ')">' +
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' +
+          '<path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>' +
+          '<path d="M11.9 0C5.338 0 0 5.338 0 11.9c0 2.1.553 4.07 1.518 5.773L.044 23.387a.5.5 0 0 0 .62.62l5.714-1.474A11.858 11.858 0 0 0 11.9 23.8C18.462 23.8 23.8 18.462 23.8 11.9S18.462 0 11.9 0zm0 21.8a9.858 9.858 0 0 1-5.14-1.446.5.5 0 0 0-.363-.06l-4.173 1.077 1.077-4.173a.5.5 0 0 0-.06-.363A9.858 9.858 0 0 1 1.9 11.9C1.9 6.44 6.44 1.9 11.9 1.9S21.9 6.44 21.9 11.9 17.36 21.8 11.9 21.8z"/>' +
+        '</svg>' +
+      '</button>' +
+    '</div>';
+  return card;
+}
+
 function renderGrid(list, activeSz) {
   list = sortProducts(list);
   const grid = document.getElementById('pgrid');
+  // Tear down any observer left over from a previous render (e.g. fast typing).
+  if (_gridObserver) { _gridObserver.disconnect(); _gridObserver = null; }
   if (!list.length) {
     grid.innerHTML =
       '<div class="empty-state">' +
@@ -198,42 +241,41 @@ function renderGrid(list, activeSz) {
     return;
   }
   grid.innerHTML = '';
-  const frag = document.createDocumentFragment();
-  list.forEach(p => {
-    const src = (getImg(p.code) || [])[0];
-    const availSz = sizeCols.filter(s => p.sizes[s] > 0);
-    const chips = availSz.map(s =>
-      szChipHTML(s, p.sizes[s], s === activeSz ? 'hi' : '')
-    ).join('');
-    const imgHTML = src
-      ? '<img class="card-img" src="' + src + '" alt="' + escHtml(p.code) + '" loading="lazy">'
-      : '<div class="card-ph">' + PH_SVG + '</div>';
-    const sub = [p.name, p.color].filter(Boolean).join(' · ');
 
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.onclick = () => openModal(p);
-    card.innerHTML = imgHTML +
-      '<div class="card-body">' +
-        '<div class="card-code">' + escHtml(p.code) + '</div>' +
-        (sub ? '<div class="card-sub">' + escHtml(sub) + '</div>' : '') +
-        '<div class="chips">' + (chips || '<span style="font-size:11px;color:var(--mid)">No sizes available</span>') + '</div>' +
-        '<button class="card-share-btn" title="Share on WhatsApp" aria-label="Share on WhatsApp" ' +
-          'onclick="event.stopPropagation();shareProduct(' +
-            JSON.stringify(p.code) + ',' +
-            JSON.stringify(p.name || '') + ',' +
-            JSON.stringify(p.price || '') + ',' +
-            JSON.stringify(availSz) +
-          ')">' +
-          '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' +
-            '<path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>' +
-            '<path d="M11.9 0C5.338 0 0 5.338 0 11.9c0 2.1.553 4.07 1.518 5.773L.044 23.387a.5.5 0 0 0 .62.62l5.714-1.474A11.858 11.858 0 0 0 11.9 23.8C18.462 23.8 23.8 18.462 23.8 11.9S18.462 0 11.9 0zm0 21.8a9.858 9.858 0 0 1-5.14-1.446.5.5 0 0 0-.363-.06l-4.173 1.077 1.077-4.173a.5.5 0 0 0-.06-.363A9.858 9.858 0 0 1 1.9 11.9C1.9 6.44 6.44 1.9 11.9 1.9S21.9 6.44 21.9 11.9 17.36 21.8 11.9 21.8z"/>' +
-          '</svg>' +
-        '</button>' +
-      '</div>';
-    frag.appendChild(card);
-  });
-  grid.appendChild(frag);
+  const renderBatch = (start, before) => {
+    const frag = document.createDocumentFragment();
+    const end = Math.min(start + GRID_BATCH, list.length);
+    for (let i = start; i < end; i++) frag.appendChild(_buildCard(list[i], activeSz));
+    if (before) grid.insertBefore(frag, before);
+    else grid.appendChild(frag);
+    return end;
+  };
+
+  let rendered = renderBatch(0);
+  if (rendered >= list.length) return;
+
+  // No IntersectionObserver (old browsers / non-DOM test env) → render the
+  // rest in one pass so nothing is ever hidden.
+  if (typeof IntersectionObserver === 'undefined') {
+    while (rendered < list.length) rendered = renderBatch(rendered);
+    return;
+  }
+
+  // Append the next batch each time a trailing sentinel nears the viewport.
+  const sentinel = document.createElement('div');
+  sentinel.style.gridColumn = '1 / -1';
+  sentinel.style.height = '1px';
+  grid.appendChild(sentinel);
+  _gridObserver = new IntersectionObserver(entries => {
+    if (!entries.some(e => e.isIntersecting)) return;
+    rendered = renderBatch(rendered, sentinel);
+    if (rendered >= list.length) {
+      _gridObserver.disconnect();
+      _gridObserver = null;
+      sentinel.remove();
+    }
+  }, { rootMargin: '800px' });
+  _gridObserver.observe(sentinel);
 }
 
 function escHtml(s) {
